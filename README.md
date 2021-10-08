@@ -16,12 +16,10 @@ On the command prompt run the following commands:
  $ git clone https://github.com/leo-moliveira/fadergs-system-b.git
  $ cd fadergs-system-b
  $ composer install
- $ npm install
  $ cp .env.example .env (edit it with your database information)
  $ php artisan jwt:secret
  $ php artisan migrate
  $ php -S localhost:8000 -t public/
- $ npm run watch
 ```
 
 ## Official Documentation
