@@ -24,8 +24,9 @@ $router->group(['prefix' => 'api'],function ($router){
 
     /*
      * Register
+     * Not used
+     * $router->post('register','AuthController@register');
      */
-    $router->post('register','AuthController@register');
 
     /*
      * maid work
