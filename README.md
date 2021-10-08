@@ -1,4 +1,4 @@
-# Project for a course Software Arquiteture to FADERGS
+# Project for a course Software Architecture to FADERGS
 
 
 ##Prerequisites
