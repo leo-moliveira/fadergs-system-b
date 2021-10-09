@@ -1,10 +1,12 @@
 <?php
 
+namespace Database\Seeders;
+
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon as Carbon;
 
-class UserTableSeeder extends Seeder
+class UsersTableSeeder extends Seeder
 {
 
     /**
@@ -17,26 +19,20 @@ class UserTableSeeder extends Seeder
         //Add the master administrator, user id of 1
         $users = [
             [
-                'first_name' => 'admin',
-                'last_name' => 'admin',
-                'email' => 'admin@admin.com',
+                'user_name' => 'admin',
                 'password' =>app('hash')->make('1234'),
                 'status' => true,
                 'created_at' => Carbon::now()
             ],
             [
-                'first_name' => 'Gerente',
-                'last_name' => 'Gerente',
-                'email' => 'gerente@hotel.com',
-                'password' => app('hash')->make('1234'),
+                'user_name' => 'gerente',
+                'password' =>app('hash')->make('1234'),
                 'status' => true,
                 'created_at' => Carbon::now()
             ],
             [
-                'first_name' => 'camareira',
-                'last_name' => 'camareira',
-                'email' => 'camareira@hotel.com',
-                'password' => app('hash')->make('1234'),
+                'user_name' => 'camareira',
+                'password' =>app('hash')->make('1234'),
                 'status' => true,
                 'created_at' => Carbon::now()
             ],

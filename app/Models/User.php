@@ -2,19 +2,34 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Str;
+use Illuminate\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Laravel\Lumen\Auth\Authorizable;
 
-class User extends BaseUser
+class User extends BaseModel implements AuthenticatableContract, AuthorizableContract
 {
-    public function getAttribute($key) {
-        if (array_key_exists($key, $this->relations)) {
-            return parent::getAttribute($key);
-        }
+    use Authenticatable, Authorizable, HasFactory;
 
-        return parent::getAttribute(Str::snake($key));
-    }
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'user_name', 'status', 'last_login_at'
+    ];
 
-    public function setAttribute($key, $value) {
-        return parent::setAttribute(Str::snake($key), $value);
-    }
+    /**
+     * The attributes excluded from the model's JSON form.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'password',
+    ];
+
 }
+
+
