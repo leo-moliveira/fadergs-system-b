@@ -12,24 +12,15 @@
 | and give it the Closure to call when that URI is requested.
 |
 */
+$api = app('Dingo\Api\Routing\Router');
 
-$router->group(['prefix' => 'api'],function ($router){
-    $router->get('/',function (){
-        return "Nothing to see here, move along!!";
+$api->version('v1', ['namespace' => 'App\Http\Controllers\Api\V1'], function ($api) {
+    // login
+    $api->post('auth/login', 'AuthController@login');
+    // refresh jwt token
+    $api->post('auth/login/refresh', 'AuthController@refreshToken');
+    // need authentication
+    $api->group(['middleware' => 'api.auth'], function ($api) {
+//
     });
-
-    /*
-     * Auth
-     */
-
-    /*
-     * Register
-     * Not used
-     * $router->post('register','AuthController@register');
-     */
-
-    /*
-     * maid work
-     */
-    $router->get('/getRoomsToClean','ExampleController@listOfRoomsToClean');
 });

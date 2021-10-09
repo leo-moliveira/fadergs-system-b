@@ -8,6 +8,13 @@ require_once __DIR__.'/../vendor/autoload.php';
 
 date_default_timezone_set(env('APP_TIMEZONE', 'UTC'));
 
+try {
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+    $dotenv->load();
+} catch (Dotenv\Exception\InvalidPathException $e) {
+    //
+}
+
 /*
 |--------------------------------------------------------------------------
 | Create The Application
@@ -76,9 +83,9 @@ $app->configure('app');
 //     App\Http\Middleware\ExampleMiddleware::class
 // ]);
 
-// $app->routeMiddleware([
-//     'auth' => App\Http\Middleware\Authenticate::class,
-// ]);
+$app->routeMiddleware([
+    'auth' => App\Http\Middleware\Authenticate::class,
+]);
 
 /*
 |--------------------------------------------------------------------------
@@ -91,9 +98,18 @@ $app->configure('app');
 |
 */
 
-// $app->register(App\Providers\AppServiceProvider::class);
-// $app->register(App\Providers\AuthServiceProvider::class);
-// $app->register(App\Providers\EventServiceProvider::class);
+$app->register(App\Providers\AppServiceProvider::class);
+$app->register(App\Providers\AuthServiceProvider::class);
+$app->register(App\Providers\EventServiceProvider::class);
+
+// Dingo API
+$app->register(Dingo\Api\Provider\LumenServiceProvider::class);
+
+// JWT Auth
+$app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
+
+// publish
+$app->register(Irazasyed\Larasupport\Providers\ArtisanServiceProvider::class);
 
 /*
 |--------------------------------------------------------------------------

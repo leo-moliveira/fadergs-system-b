@@ -1,15 +1,19 @@
 {
-    "name": "laravel/lumen",
-    "description": "The Laravel Lumen Framework.",
+    "name": "leo-moliveira/fadergs-system-b",
+    "description": "The hotel system to university FADERGS",
+    "author": "Leonardo Oliveira <leo.oliveira8@gmail.com>",
     "keywords": ["framework", "laravel", "lumen"],
     "license": "MIT",
     "type": "project",
     "require": {
         "php": "^7.3",
+        "dingo/api": "^3.0",
+        "irazasyed/larasupport": "^1.7",
         "laravel/lumen-framework": "^8.0",
         "pagseguro/pagseguro-php-sdk": "^6.0",
         "swagger-api/swagger-ui": "^3.52",
-        "tymon/jwt-auth": "^1.0"
+        "tymon/jwt-auth": "^1.0",
+        "vlucas/phpdotenv": "^5.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
@@ -25,7 +29,8 @@
     },
     "autoload-dev": {
         "classmap": [
-            "tests/"
+            "tests/",
+            "database/"
         ]
     },
     "config": {
