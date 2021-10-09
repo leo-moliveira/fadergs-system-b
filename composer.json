@@ -7,6 +7,8 @@
     "require": {
         "php": "^7.3",
         "laravel/lumen-framework": "^8.0",
+        "pagseguro/pagseguro-php-sdk": "^6.0",
+        "swagger-api/swagger-ui": "^3.52",
         "tymon/jwt-auth": "^1.0"
     },
     "require-dev": {
