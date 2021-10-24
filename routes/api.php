@@ -21,6 +21,7 @@ $api->version('v1', ['namespace' => 'App\Http\Controllers\Api\V1'], function ($a
     $api->post('auth/login/refresh', 'AuthController@refreshToken');
     // need authentication
     $api->group(['middleware' => 'api.auth'], function ($api) {
-//
+        //User
+        $api->get('user','UserControlle@index');
     });
 });
