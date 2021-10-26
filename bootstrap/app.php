@@ -34,6 +34,8 @@ $app->withFacades();
 
 $app->withEloquent();
 
+$app->configure('swagger-lume');
+
 /*
 |--------------------------------------------------------------------------
 | Register Container Bindings
@@ -111,6 +113,8 @@ $app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
 // publish
 $app->register(Irazasyed\Larasupport\Providers\ArtisanServiceProvider::class);
 
+//Swagger
+$app->register(\SwaggerLume\ServiceProvider::class);
 /*
 |--------------------------------------------------------------------------
 | Load The Application Routes

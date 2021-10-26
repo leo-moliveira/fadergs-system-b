@@ -21,8 +21,35 @@ class AuthController extends BaseController
     }
 
     /**
-     * Handle a login request to the application.
-     *
+     * @OA\Post (
+     *     path="/api/auth/login",
+     *     operationId="/api/auth/login",
+     *     tags={"Authentication"},
+     *     description = "Handle a login request to the application.",
+     *     @OA\Parameter(
+     *         name="user_name",
+     *         in="path",
+     *         description="User Name",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="password",
+     *         in="path",
+     *         description="User Password",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Return login user token",
+     *         @OA\JsonContent()
+     *     ),
+     *     @OA\Response(
+     *         response="400",
+     *         description="Error: Bad request. When required parameters were not supplied.",
+     *     ),
+     * )
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */

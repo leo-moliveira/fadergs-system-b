@@ -19,7 +19,7 @@ On the command prompt run the following commands:
  $ cp .env.example .env (edit it with your database information)
  $ php artisan jwt:secret
  $ php artisan migrate
- $ php -S localhost:8000 -t public/
+ $ php -S localhost:8000 -t ./public/index.php
 ```
 
 ## Official Documentation
