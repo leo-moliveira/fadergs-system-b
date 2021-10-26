@@ -50,6 +50,93 @@
                     }
                 }
             }
+        },
+        "/api/rooms": {
+            "get": {
+                "tags": [
+                    "Rooms"
+                ],
+                "description": "Get list of all rooms",
+                "operationId": "/api/rooms",
+                "responses": {
+                    "200": {
+                        "description": "Return List of all rooms",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/api/rooms/occupied": {
+            "get": {
+                "tags": [
+                    "Rooms"
+                ],
+                "description": "Get list of rooms that are not available.",
+                "operationId": "/api/rooms/occupied",
+                "responses": {
+                    "200": {
+                        "description": "Return list of rooms.",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/api/rooms/available": {
+            "get": {
+                "tags": [
+                    "Rooms"
+                ],
+                "description": "Get list of rooms that are available.",
+                "operationId": "/api/rooms/available",
+                "responses": {
+                    "200": {
+                        "description": "Return list of rooms.",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/api/rooms/{id}": {
+            "get": {
+                "tags": [
+                    "Rooms"
+                ],
+                "description": "Get list of rooms that are available.",
+                "operationId": "/api/rooms/{id}",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Id of rooms to show",
+                        "required": true,
+                        "schema": {
+                            "type": "int"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rooms information.",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

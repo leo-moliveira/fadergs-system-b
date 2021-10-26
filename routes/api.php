@@ -25,8 +25,8 @@ $api->version('v1', ['namespace' => 'App\Http\Controllers\Api\V1'], function ($a
         $api->get('user','UserControlle@index');
         //Rooms
         $api->get('rooms','RoomsController@index');
-        $api->get('rooms/busy','RoomsController@listBusyRooms');
-        $api->get('rooms/free','RoomsController@listFreeRooms');
+        $api->get('rooms/occupied','RoomsController@listOccupiedRooms');
+        $api->get('rooms/available','RoomsController@listAvailableRooms');
         $api->get('rooms/{id}','RoomsController@show');
 
     });
