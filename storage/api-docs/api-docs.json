@@ -14,39 +14,51 @@
                 "tags": [
                     "Authentication"
                 ],
-                "description": "Handle a login request to the application.",
-                "operationId": "/api/auth/login",
-                "parameters": [
-                    {
-                        "name": "user_name",
-                        "in": "path",
-                        "description": "User Name",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "password",
-                        "in": "path",
-                        "description": "User Password",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Return login user token",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
+                "summary": "Handle a login request to the application.",
+                "description": "Login by user_name and password",
+                "operationId": "login",
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "user_name",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "user_name": {
+                                        "type": "string",
+                                        "example": "gerente"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "1234"
+                                    }
+                                },
+                                "type": "object"
                             }
                         }
-                    },
-                    "400": {
-                        "description": "Error: Bad request. When required parameters were not supplied."
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authenticated token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0L2FwaS9hdXRoL2xvZ2luIiwiaWF0IjoxNjM1NDU5NzM3LCJleHAiOjE2MzU0NjMzMzcsIm5iZiI6MTYzNTQ1OTczNywianRpIjoiVXozanpUeElNNnJBSDJCSiIsInN1YiI6MiwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9.TWsfFNrcU4dFGnbNyNbudzQSwdCknOKGrImic5BROtw"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -133,6 +145,56 @@
                             "application/json": {
                                 "schema": {}
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/api/rooms": {
+            "post": {
+                "tags": [
+                    "Rooms"
+                ],
+                "description": "Save list of rooms on database",
+                "operationId": "/api/rooms",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Id of rooms to show",
+                        "required": true,
+                        "schema": {
+                            "type": "int"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rooms information.",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "responses": {
+            "403": {
+                "description": "Forbidden",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "token": {
+                                    "type": "string",
+                                    "example": ""
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }

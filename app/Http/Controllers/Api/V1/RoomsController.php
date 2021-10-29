@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api\V1;
 
 
+use App\Models\Employees;
 use App\Models\Rooms;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Transformers\RoomTransformer;
 
@@ -111,9 +113,28 @@ class RoomsController extends BaseController
     }
 
     /**
+     * @OA\Post (
+     *     path="/api/api/rooms",
+     *     operationId="/api/rooms",
+     *     tags={"Rooms"},
+     *     description = "Save list of rooms on database",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Id of rooms to show",
+     *         required=true,
+     *         @OA\Schema(type="int")
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Rooms information.",
+     *         @OA\JsonContent()
+     *     )
+     * )
      * @param Request $request
      */
     public function store(Request $request){
+        $this->validateRole($request->user());
         //TODO validate permition
         //TODO store room
     }
@@ -124,7 +145,13 @@ class RoomsController extends BaseController
     /**
      *
      */
-    private function validateRole(){
-        //TODO: employee validade role
+    private function validateRole(User $user){
+        try {
+            $employee = Employees::where('user_id', $user['id'])->first();
+        }catch (\Exception $e){
+            return $e->getMessage();
+        }
+        $employee = Employees::where('user_id', $user['id'])->first();
+
     }
 }

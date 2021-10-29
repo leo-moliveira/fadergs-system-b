@@ -22,12 +22,13 @@ $api->version('v1', ['namespace' => 'App\Http\Controllers\Api\V1'], function ($a
     // need authentication
     $api->group(['middleware' => 'api.auth'], function ($api) {
         //User
-        $api->get('user','UserControlle@index');
+        $api->get('user','UserController@index');
         //Rooms
         $api->get('rooms','RoomsController@index');
         $api->get('rooms/occupied','RoomsController@listOccupiedRooms');
         $api->get('rooms/available','RoomsController@listAvailableRooms');
         $api->get('rooms/{id}','RoomsController@show');
+        $api->post('rooms','RoomsController@store');
 
     });
 });

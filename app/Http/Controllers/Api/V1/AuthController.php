@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -21,34 +23,36 @@ class AuthController extends BaseController
     }
 
     /**
-     * @OA\Post (
-     *     path="/api/auth/login",
-     *     operationId="/api/auth/login",
-     *     tags={"Authentication"},
-     *     description = "Handle a login request to the application.",
-     *     @OA\Parameter(
-     *         name="user_name",
-     *         in="path",
-     *         description="User Name",
-     *         required=true,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="password",
-     *         in="path",
-     *         description="User Password",
-     *         required=true,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Response(
-     *         response="200",
-     *         description="Return login user token",
-     *         @OA\JsonContent()
-     *     ),
-     *     @OA\Response(
-     *         response="400",
-     *         description="Error: Bad request. When required parameters were not supplied.",
-     *     ),
+     * @OA\Post(
+     * path="/api/auth/login",
+     * summary="Handle a login request to the application.",
+     * description="Login by user_name and password",
+     * operationId="login",
+     * tags={"Authentication"},
+     * @OA\RequestBody(
+     *    required=true,
+     *    description="Pass user credentials",
+     *    @OA\JsonContent(
+     *       required={"user_name","password"},
+     *       @OA\Property(property="user_name", type="string", example="gerente"),
+     *       @OA\Property(property="password", type="string", format="password", example="1234")
+     *    ),
+     * ),
+     * @OA\Response(
+     *    response=200,
+     *    description="Authenticated token",
+     *    @OA\JsonContent(
+     *       @OA\Property(property="token", type="string", example="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0L2FwaS9hdXRoL2xvZ2luIiwiaWF0IjoxNjM1NDU5NzM3LCJleHAiOjE2MzU0NjMzMzcsIm5iZiI6MTYzNTQ1OTczNywianRpIjoiVXozanpUeElNNnJBSDJCSiIsInN1YiI6MiwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9.TWsfFNrcU4dFGnbNyNbudzQSwdCknOKGrImic5BROtw")
+     *        )
+     *     )
+     * ),
+     * @OA\Response(
+     *    response=403,
+     *    description="Forbidden",
+     *    @OA\JsonContent(
+     *       @OA\Property(property="message", type="string", example="")
+     *        )
+     *     )
      * )
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
@@ -74,8 +78,21 @@ class AuthController extends BaseController
         } catch (JWTException $e) {
             $this->response->errorInternal('could_not_create_token');
         }
+
+        $this->updateDateLogin($request->user());
+
         // all good so return the token
         return $this->response->array(compact('token'));
+    }
+
+    private function updateDateLogin(User $user){
+        try {
+            $user['last_login_at'] = Carbon::now()->toDateTimeString();
+            $user->save();
+        } catch (\Exception $e){
+            return $e->getMessage();
+        }
+        return true;
     }
 
 }
