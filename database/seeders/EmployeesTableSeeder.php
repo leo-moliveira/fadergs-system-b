@@ -22,7 +22,6 @@ class EmployeesTableSeeder extends Seeder {
                 'first_name' => "Happy",
                 'last_name' => "Wilburn",
                 'status' => 1,
-                'role' => "admin",
                 'created_at' => Carbon::now()
             ],
             [
@@ -30,7 +29,6 @@ class EmployeesTableSeeder extends Seeder {
                 'first_name' => "Kenton",
                 'last_name' => "Lucia",
                 'status' => 1,
-                'role' => "manager",
                 'created_at' => Carbon::now()
             ],
             [
@@ -38,7 +36,6 @@ class EmployeesTableSeeder extends Seeder {
                 'first_name' => "Lorin",
                 'last_name' => "Temperance",
                 'status' => 1,
-                'role' => "employee",
                 'created_at' => Carbon::now()
             ],
         ];

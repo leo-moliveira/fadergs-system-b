@@ -12,6 +12,7 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends BaseController
 {
+    protected $user;
     /**
      * Create a new controller instance.
      *
@@ -75,14 +76,22 @@ class AuthController extends BaseController
             if (!$token = JWTAuth::attempt($credentials)) {
                 $this->response->errorForbidden(trans('auth.incorrect'));
             }
+            $this->user = $request->user();
+            (!$this->validateStatus($this->user)) ? $this->response->errorUnauthorized(trans('auth.unauthorized')): '';
+            $this->updateDateLogin($this->user);
         } catch (JWTException $e) {
             $this->response->errorInternal('could_not_create_token');
         }
-
-        $this->updateDateLogin($request->user());
-
         // all good so return the token
         return $this->response->array(compact('token'));
+    }
+
+    //private
+    private function validateStatus(User $user) {
+        if($user['status']){
+            return true;
+        }
+        return false;
     }
 
     private function updateDateLogin(User $user){

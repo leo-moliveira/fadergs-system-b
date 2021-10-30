@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-
-use App\Models\Employees;
 use App\Models\Rooms;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Transformers\RoomTransformer;
 
@@ -134,9 +133,36 @@ class RoomsController extends BaseController
      * @param Request $request
      */
     public function store(Request $request){
-        $this->validateRole($request->user());
-        //TODO validate permition
-        //TODO store room
+        //Check permissions
+        $arrayPermission = ['admin', 'manager'];
+        if (!$this->validateRole($request->user(),$arrayPermission)){
+           return $this->response->errorUnauthorized(trans('auth.unauthorized'));
+        }
+        //Validate request
+        $validator = \Validator::make($request->input(), [
+            'number' => 'required|integer',
+            'status' => 'required|string',
+            'price' => 'required|between:0,99.99',
+            'description' => 'required|string'
+        ]);
+        if ($validator->fails()) {
+            return $this->errorBadRequest($validator->messages());
+        }
+
+        $atributes = [
+            'id'            => $request->get('number'),
+            'status'        => $request->get('status'),
+            'price'         => $request->get('price'),
+            'description'   => $request->get('description'),
+            'created_at'    => Carbon::now()->toDateTimeString()
+        ];
+        try{
+            $this->rooms->create($atributes);
+            return $this->response->created();
+        }catch (\PDOException $e){
+            return $this->response->error($e->getMessage());
+        }
+
     }
 
 
@@ -145,13 +171,8 @@ class RoomsController extends BaseController
     /**
      *
      */
-    private function validateRole(User $user){
-        try {
-            $employee = Employees::where('user_id', $user['id'])->first();
-        }catch (\Exception $e){
-            return $e->getMessage();
-        }
-        $employee = Employees::where('user_id', $user['id'])->first();
-
+    private function validateRole(User $user, $permitions) : bool
+    {
+        return (in_array($user->role, $permitions)) ? true : false;
     }
 }

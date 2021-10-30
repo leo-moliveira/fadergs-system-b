@@ -14,8 +14,7 @@ class CreateClientsTable extends Migration
     public function up()
     {
         Schema::create('clients', function (Blueprint $table) {
-            $table->increments('id')->unique()->nullable(false);
-            $table->integer('user_id')->unique()->nullable(false);
+            $table->integer('user_id')->unsigned();
             $table->string('first_name',200);
             $table->string('last_name',200);
             $table->string('email',200);
@@ -26,7 +25,7 @@ class CreateClientsTable extends Migration
             $table->timestamp('last_reservation');
             $table->timestamp('registration_date');
             $table->timestamps();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->primary('user_id');
         });
     }
 

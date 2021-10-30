@@ -17,6 +17,7 @@ class CreateUsersTable extends Migration
             $table->increments('id');
             $table->string('user_name',20)->unique();
             $table->string('password',200);
+            $table->string('role',60);
             $table->boolean('status');
             $table->timestamp('last_login_at')->nullable();
             $table->timestamps();

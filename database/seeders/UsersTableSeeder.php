@@ -22,18 +22,21 @@ class UsersTableSeeder extends Seeder
                 'user_name' => 'admin',
                 'password' =>app('hash')->make('1234'),
                 'status' => true,
+                'role' => 'admin',
                 'created_at' => Carbon::now()
             ],
             [
                 'user_name' => 'gerente',
                 'password' =>app('hash')->make('1234'),
                 'status' => true,
+                'role' => 'manager',
                 'created_at' => Carbon::now()
             ],
             [
                 'user_name' => 'camareira',
                 'password' =>app('hash')->make('1234'),
                 'status' => true,
+                'role' => 'employee',
                 'created_at' => Carbon::now()
             ],
         ];

@@ -12,13 +12,15 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
 {
     use Authenticatable, Authorizable;
 
+    protected $table = 'users';
+    protected $primaryKey = 'id';
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'user_name', 'status', 'last_login_at'
+        'user_name', 'status', 'last_login_at', 'role'
     ];
 
     /**
@@ -48,6 +50,10 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    public function employee(){
+        return $this->hasOne(Employee::class,'user_id','id');
     }
 }
 
