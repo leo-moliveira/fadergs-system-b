@@ -28,14 +28,13 @@ class AuthController extends BaseController
      * path="/api/auth/login",
      * summary="Handle a login request to the application.",
      * description="Login by user_name and password",
-     * operationId="login",
      * tags={"Authentication"},
      * @OA\RequestBody(
      *    required=true,
      *    description="Pass user credentials",
      *    @OA\JsonContent(
      *       required={"user_name","password"},
-     *       @OA\Property(property="user_name", type="string", example="gerente"),
+     *       @OA\Property(property="user_name", type="string", example="camareira"),
      *       @OA\Property(property="password", type="string", format="password", example="1234")
      *    ),
      * ),

@@ -102,6 +102,15 @@ return [
     |--------------------------------------------------------------------------
     */
     'security' => [
+        "JWT" => [
+            'type' => "http",
+            'description' => "Use /auth/login to get JWT token",
+            'name' => "Authorization",
+            'in' => "header",
+            'scheme' => "bearer",
+            'bearerFormat' => "JWT",
+            'securityScheme' => "bearerAuth",
+        ]
         /*
         |--------------------------------------------------------------------------
         | Examples of Security definitions
@@ -149,7 +158,7 @@ return [
     | Turn this off to remove swagger generation on production
     |--------------------------------------------------------------------------
      */
-    'generate_always' => env('SWAGGER_GENERATE_ALWAYS', false),
+    'generate_always' => env('SWAGGER_GENERATE_ALWAYS', true),
 
     /*
     |--------------------------------------------------------------------------

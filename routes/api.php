@@ -29,6 +29,10 @@ $api->version('v1', ['namespace' => 'App\Http\Controllers\Api\V1'], function ($a
         $api->get('rooms/available','RoomsController@listAvailableRooms');
         $api->get('rooms/{id}','RoomsController@show');
         $api->post('rooms','RoomsController@store');
-
+        $api->delete('rooms/delete/{number}','RoomsController@delete');
+        $api->put('rooms/{number}', 'RoomsController@update');
+        //Cleaning
+        //Reservation
+        //Payment
     });
 });
