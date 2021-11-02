@@ -5,7 +5,8 @@ namespace App\Models;
 class Client extends BaseModel {
 
     protected $table = 'clients';
-
+    protected $primaryKey = 'user_id';
+    public $incrementing = false;
     /**
      * The attributes that are mass assignable.
      *

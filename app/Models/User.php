@@ -55,6 +55,10 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
     public function employee(){
         return $this->hasOne(Employee::class,'user_id','id');
     }
+
+    public function client(){
+        return $this->hasOne(Client::class,'user_id','id');
+    }
 }
 
 
