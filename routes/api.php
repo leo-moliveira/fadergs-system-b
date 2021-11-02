@@ -32,7 +32,7 @@ $api->version('v1', ['namespace' => 'App\Http\Controllers\Api\V1'], function ($a
         $api->delete('rooms/delete/{number}','RoomsController@delete');
         $api->put('rooms/{number}', 'RoomsController@update');
         //client
-        $api->get('clients', 'ClientsController@list'); //TODO
+        $api->get('clients', 'ClientsController@list');
         $api->get('clients/{id}', 'ClientsController@show'); //TODO
         $api->get('clients/status/{status}', 'ClientsController@clientsByStatus'); //TODO
         $api->post('clients/import/list', 'ClientsController@importList'); //TODO
@@ -42,6 +42,8 @@ $api->version('v1', ['namespace' => 'App\Http\Controllers\Api\V1'], function ($a
         $api->get('cleaning/{number}', 'CleaningController@show'); //TODO
         $api->post('cleaning', 'CleaningController@store'); //TODO
         $api->put('cleaning/{number}', 'CleaningController@update'); //TODO
+        $api->put('cleaning/start/{number}', 'CleaningController@start'); //TODO
+        $api->put('cleaning/completed/{number}', 'CleaningController@completed'); //TODO
         $api->delete('cleaning/delete/{number}', 'CleaningController@delete'); //TODO
         //Reservation
         $api->get('reservation', 'ReservationController@list'); //TODO

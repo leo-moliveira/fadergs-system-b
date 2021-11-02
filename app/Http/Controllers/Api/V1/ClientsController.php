@@ -39,11 +39,12 @@ class ClientsController extends BaseController
         return $this->response->paginator($clients, new ClientTransformer());
     }
 
-    public function show(Request $request){
+    public function show(Request $request, $id){
         //Check permissions
         if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
             return $this->response->errorUnauthorized(trans('client.unauthorized'));
         }
+
     }
 
     public function clientsByStatus(Request $request){
