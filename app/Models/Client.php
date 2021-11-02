@@ -15,4 +15,8 @@ class Client extends BaseModel {
     protected $fillable = [
         'first_name', 'last_name', 'email', 'cpf', 'rg', 'gender', 'status', 'last_reservation', 'registration_date'
     ];
+
+    public function user(){
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
 }

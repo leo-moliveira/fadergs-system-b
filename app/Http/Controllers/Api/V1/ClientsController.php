@@ -35,7 +35,7 @@ class ClientsController extends BaseController
             return $this->response->errorUnauthorized(trans('client.unauthorized'));
         }
 
-        $clients = $this->client->paginate(25);
+        $clients = $this->client->with(['user'])->paginate(25);
         return $this->response->paginator($clients, new ClientTransformer());
     }
 
