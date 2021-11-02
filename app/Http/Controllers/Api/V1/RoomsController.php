@@ -171,6 +171,7 @@ class RoomsController extends BaseController
      *     path="/api/rooms/delete/{number}",
      *     tags={"Rooms"},
      *     summary = "Delete a room",
+     *     security={{"JWT":{}}},
      *     @OA\Parameter(
      *         name="number",
      *         in="path",
