@@ -31,6 +31,8 @@ $api->version('v1', ['namespace' => 'App\Http\Controllers\Api\V1'], function ($a
         $api->post('rooms','RoomsController@store');
         $api->delete('rooms/delete/{number}','RoomsController@delete');
         $api->put('rooms/{number}', 'RoomsController@update');
+        //client
+
         //Cleaning
         //Reservation
         //Payment
