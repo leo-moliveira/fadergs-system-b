@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Http\Classes\Helpers as MyHelpers;
+use App\Http\Classes\Helpers;
 use App\Models\Client;
 use App\Transformers\ClientTransformer;
 use Illuminate\Http\Request;
@@ -28,27 +28,27 @@ class ClientsController extends BaseController
      *     ),
      *     security={{"JWT":{}}}
      * )
-     * @return \Dingo\Api\Http\Response
      */
     public function list(Request $request){
         //Check permissions
-        if (!MyHelpers::validateUserRole($request->user(), ['admin', 'manager'])){
+        if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
             return $this->response->errorUnauthorized(trans('client.unauthorized'));
         }
+
         $clients = $this->client->paginate(25);
         return $this->response->paginator($clients, new ClientTransformer());
     }
 
-    public function show(Request $request,$id){
+    public function show(Request $request){
         //Check permissions
-        if (!MyHelpers::validateUserRole($request->user(), ['admin', 'manager'])){
+        if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
             return $this->response->errorUnauthorized(trans('client.unauthorized'));
         }
     }
 
     public function clientsByStatus(Request $request){
         //Check permissions
-        if (!MyHelpers::validateUserRole($request->user(), ['admin', 'manager'])){
+        if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
             return $this->response->errorUnauthorized(trans('client.unauthorized'));
         }
     }
@@ -62,7 +62,7 @@ class ClientsController extends BaseController
 
     public function import(Request $request){
         //Check permissions
-        if (!MyHelpers::validateUserRole($request->user(), ['admin', 'manager'])){
+        if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
             return $this->response->errorUnauthorized(trans('client.unauthorized'));
         }
     }

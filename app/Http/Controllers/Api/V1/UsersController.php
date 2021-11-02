@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use App\Models\User as ModelUser;
 use App\Http\Classes\User;
 use Illuminate\Http\Request;
-use App\Transformers\UserTransformer;
 
 class UsersController extends BaseController
 {

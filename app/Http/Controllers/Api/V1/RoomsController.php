@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Models\Rooms;
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Transformers\RoomTransformer;
@@ -196,7 +195,7 @@ class RoomsController extends BaseController
     public function delete($number, Request $request)
     {
         //Check permissions
-        if (!$this->validateRole($request->user(), ['admin', 'manager'] )){
+        if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
             return $this->response->errorUnauthorized(trans('rooms.unauthorized'));
         }
 
@@ -264,7 +263,7 @@ class RoomsController extends BaseController
      */
     public function update($number, Request $request){
         //Check permissions
-        if (!$this->validateRole($request->user(), ['admin', 'manager'] )){
+        if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
             return $this->response->errorUnauthorized(trans('rooms.unauthorized'));
         }
 
@@ -305,11 +304,4 @@ class RoomsController extends BaseController
 
     /*** private ***/
 
-    /**
-     *
-     */
-    private function validateRole(User $user, $permitions) : bool
-    {
-        return (in_array($user->role, $permitions)) ? true : false;
-    }
 }
