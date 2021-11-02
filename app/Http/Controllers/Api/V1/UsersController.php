@@ -16,7 +16,7 @@ class UsersController extends BaseController
      */
     public function __construct(ModelUser $user)
     {
-        $this->$user = $user;
+        $this->user = $user;
     }
 
     /**

@@ -2,12 +2,12 @@
 
 namespace App\Transformers;
 
-use App\Http\Classes\User;
+use App\Models\User;
 use League\Fractal\TransformerAbstract;
 
 class UserTransformer extends TransformerAbstract
 {
     public function transform(User $user){
-        return $user->toArray();
+       return $user->attributesToArray();
     }
 }

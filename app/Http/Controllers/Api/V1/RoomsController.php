@@ -7,6 +7,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Transformers\RoomTransformer;
+use App\Http\Classes\Helpers;
 
 /**
  *
@@ -135,8 +136,8 @@ class RoomsController extends BaseController
     public function store(Request $request)
     {
         //Check permissions
-        if (!$this->validateRole($request->user(), ['admin', 'manager'] )){
-           return $this->response->errorUnauthorized(trans('rooms.unauthorized'));
+        if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
+            return $this->response->errorUnauthorized(trans('rooms.unauthorized'));
         }
 
         //Validate request
