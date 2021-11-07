@@ -44,6 +44,45 @@ class CleaningController extends BaseController
 
     /**
      * @OA\Get (
+     *     path="/api/cleaning/status/{status}",
+     *     tags={"Cleaning"},
+     *     summary = "Get list of all rooms on cleaning process by status",
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="path",
+     *         description="Status to search",
+     *         required=true,
+     *         @OA\Schema(
+     *                      type="string",
+     *                      enum={"to-clean", "cleaning", "clean"},
+     *                  )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Return List of all rooms"
+     *     ),
+     *     security={{"JWT":{}}}
+     * )
+     * @return \Dingo\Api\Http\Response
+     */
+    public function listByStatus(Request $request, $status)
+    {
+        //Check permissions
+        if (!Helpers::validateUserRole($request->user(), ['admin', 'manager','employee'])){
+            return $this->response->errorUnauthorized(trans('unauthorized'));
+        }
+
+        $cleaning = $this->cleaning->where('status', $status)->orderBy('created_at', 'ASC')->paginate(25);
+
+        if(!$cleaning){
+            return $this->response->errorNotFound();
+        }
+
+        return $this->response->paginator($cleaning, new CleaningTransformer());
+    }
+
+    /**
+     * @OA\Get (
      *     path="/api/cleaning/{number}",
      *     tags={"Cleaning"},
      *     summary = "Get information of a room on cleaning process",
@@ -62,20 +101,21 @@ class CleaningController extends BaseController
      * )
      * @return \Dingo\Api\Http\Response
      */
-    public function show(Request $request, $id)
+    public function show(Request $request, $number)
     {
         //Check permissions
         if (!Helpers::validateUserRole($request->user(), ['admin', 'manager','employee'])){
             return $this->response->errorUnauthorized(trans('unauthorized'));
         }
+        //$rooms = $this->rooms->where('status', '=', 1)->paginate(25)
+        //->whereNotIn('status', ['clean']);
+        $cleaning = $this->cleaning->where('rooms_id', $number)->orderBy('created_at', 'ASC')->paginate(25);
 
-        try {
-            $cleaning = $this->cleaning->findOrFail($id);
-            return $this->response->item($cleaning, new CleaningTransformer());
-        }catch (\Exception $exception){
+        if(!$cleaning){
             return $this->response->errorNotFound();
         }
 
+        return $this->response->paginator($cleaning, new CleaningTransformer());
     }
 
     /**
@@ -157,7 +197,7 @@ class CleaningController extends BaseController
 
     /**
      * @OA\Put (
-     *     path="/api/cleaning/{number}",
+     *     path="/api/cleaning/{id}",
      *     tags={"Cleaning"},
      *     summary = "Update room to clean on data base",
      *     @OA\RequestBody(
@@ -167,6 +207,7 @@ class CleaningController extends BaseController
      *           mediaType="application/x-www-form-urlencoded",
      *           @OA\Schema(
      *               type="object",
+     *               @OA\Property(property="room_number", type="integer", example="101"),
      *               @OA\Property(property="manager_id", type="integer", example="2"),
      *               @OA\Property(property="employee_id", type="integer", example="3"),
      *               @OA\Property(property="status", type="string", example="clean"),
@@ -174,11 +215,11 @@ class CleaningController extends BaseController
      *           )
      *     ),
      *     @OA\Parameter(
-     *         name="number",
+     *         name="id",
      *         in="path",
-     *         description="Number of room to update",
+     *         description="Id of the cleaning register on database",
      *         required=true,
-     *         @OA\Schema(type="number")
+     *         @OA\Schema(type="integer")
      *     ),
      *     @OA\Response(
      *         response="200",
@@ -194,7 +235,7 @@ class CleaningController extends BaseController
      * )
      * @param Request $request
      */
-    public function update(Request $request,$number)
+    public function update(Request $request, $id)
     {
         //Check permissions
         if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
@@ -202,15 +243,15 @@ class CleaningController extends BaseController
         }
 
         //Validate request
-        $validator = \Validator::make(["number" => $number], [
-            'number' => 'required|integer',
+        $validator = \Validator::make(["$id" => $id], [
+            '$id' => 'required|integer',
         ]);
 
         if ($validator->fails()) {
             return $this->errorBadRequest($validator->messages());
         }
 
-        $cleaning = Cleaning::findOrFail($number);
+        $cleaning = Cleaning::findOrFail($id);
 
         if (! $cleaning) {
             return $this->response->errorNotFound();
@@ -241,16 +282,16 @@ class CleaningController extends BaseController
 
     /**
      * @OA\Delete (
-     *     path="/api/cleaning/delete/{number}",
+     *     path="/api/cleaning/delete/{id}",
      *     tags={"Cleaning"},
      *     summary = "Delete a room on cleaning process",
      *     security={{"JWT":{}}},
      *     @OA\Parameter(
-     *         name="number",
+     *         name="id",
      *         in="path",
-     *         description="Number of room to delete",
+     *         description="Id of process clean on database",
      *         required=true,
-     *         @OA\Schema(type="number")
+     *         @OA\Schema(type="integer")
      *     ),
      *     @OA\Response(
      *         response="200",
@@ -265,7 +306,7 @@ class CleaningController extends BaseController
      * )
      * @param Request $request
      */
-    public function delete(Request $request,$number)
+    public function delete(Request $request, $id)
     {
         //Check permissions
         if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
@@ -273,7 +314,7 @@ class CleaningController extends BaseController
         }
 
         //Validate request
-        $validator = \Validator::make(["number" => $number], [
+        $validator = \Validator::make(["number" => $id], [
             'number' => 'required|integer',
         ]);
 
@@ -281,7 +322,7 @@ class CleaningController extends BaseController
             return $this->errorBadRequest($validator->messages());
         }
 
-        $cleaning = Cleaning::findOrFail($number);
+        $cleaning = Cleaning::findOrFail($id);
 
         if (! $cleaning) {
             return $this->response->errorNotFound();
@@ -297,15 +338,15 @@ class CleaningController extends BaseController
 
     /**
      * @OA\Put (
-     *     path="/api/cleaning/start/{number}",
+     *     path="/api/cleaning/start/{id}",
      *     tags={"Cleaning"},
      *     summary = "Update room status to cleaning",
      *     @OA\Parameter(
-     *         name="number",
+     *         name="id",
      *         in="path",
-     *         description="Number of room to update",
+     *         description="Id of cleaning process on data base",
      *         required=true,
-     *         @OA\Schema(type="number")
+     *         @OA\Schema(type="integer")
      *     ),
      *     @OA\Response(
      *         response="200",
@@ -321,7 +362,7 @@ class CleaningController extends BaseController
      * )
      * @param Request $request
      */
-    public function start(Request $request,$number)
+    public function start(Request $request, $id)
     {
         //Check permissions
         if (!Helpers::validateUserRole($request->user(), ['admin', 'manager','employee'])){
@@ -329,7 +370,7 @@ class CleaningController extends BaseController
         }
 
         //Validate request
-        $validator = \Validator::make(["number" => $number], [
+        $validator = \Validator::make(["number" => $id], [
             'number' => 'required|integer',
         ]);
 
@@ -337,7 +378,7 @@ class CleaningController extends BaseController
             return $this->errorBadRequest($validator->messages());
         }
 
-        $cleaning = Cleaning::findOrFail($number);
+        $cleaning = Cleaning::findOrFail($id);
 
         if (!$cleaning) {
             return $this->response->errorNotFound();
@@ -355,15 +396,15 @@ class CleaningController extends BaseController
 
     /**
      * @OA\Put (
-     *     path="/api/cleaning/completed/{number}",
+     *     path="/api/cleaning/completed/{id}",
      *     tags={"Cleaning"},
      *     summary = "Update room status to completed",
      *     @OA\Parameter(
-     *         name="number",
+     *         name="id",
      *         in="path",
-     *         description="Number of room to update",
+     *         description="Id of cleaning process on data base",
      *         required=true,
-     *         @OA\Schema(type="number")
+     *         @OA\Schema(type="integer")
      *     ),
      *     @OA\Response(
      *         response="200",
@@ -379,7 +420,7 @@ class CleaningController extends BaseController
      * )
      * @param Request $request
      */
-    public function completed(Request $request,$number)
+    public function completed(Request $request, $id)
     {
         //Check permissions
         if (!Helpers::validateUserRole($request->user(), ['admin', 'manager','employee'])){
@@ -387,7 +428,7 @@ class CleaningController extends BaseController
         }
 
         //Validate request
-        $validator = \Validator::make(["number" => $number], [
+        $validator = \Validator::make(["number" => $id], [
             'number' => 'required|integer',
         ]);
 
@@ -395,7 +436,7 @@ class CleaningController extends BaseController
             return $this->errorBadRequest($validator->messages());
         }
 
-        $cleaning = Cleaning::findOrFail($number);
+        $cleaning = Cleaning::findOrFail($id);
 
         if (!$cleaning) {
             return $this->response->errorNotFound();

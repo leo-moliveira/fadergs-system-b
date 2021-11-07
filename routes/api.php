@@ -40,11 +40,12 @@ $api->version('v1', ['namespace' => 'App\Http\Controllers\Api\V1'], function ($a
         //Cleaning
         $api->get('cleaning', 'CleaningController@list');
         $api->get('cleaning/{number}', 'CleaningController@show');
+        $api->get('cleaning/status/{status}', 'CleaningController@listByStatus');
         $api->post('cleaning', 'CleaningController@store');
-        $api->put('cleaning/{number}', 'CleaningController@update');
-        $api->put('cleaning/start/{number}', 'CleaningController@start');
-        $api->put('cleaning/completed/{number}', 'CleaningController@completed');
-        $api->delete('cleaning/delete/{number}', 'CleaningController@delete'); //TODO
+        $api->put('cleaning/{id}', 'CleaningController@update');
+        $api->put('cleaning/start/{id}', 'CleaningController@start');
+        $api->put('cleaning/completed/{id}', 'CleaningController@completed');
+        $api->delete('cleaning/delete/{id}', 'CleaningController@delete');
         //Reservation
         $api->get('reservation', 'ReservationController@list'); //TODO
         $api->get('reservation/{id}', 'ReservationController@show'); //TODO
