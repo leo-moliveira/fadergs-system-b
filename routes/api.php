@@ -38,12 +38,12 @@ $api->version('v1', ['namespace' => 'App\Http\Controllers\Api\V1'], function ($a
         $api->post('clients/import/list', 'ClientsController@importList'); //TODO
         $api->post('clients/import', 'ClientsController@import'); //TODO
         //Cleaning
-        $api->get('cleaning', 'CleaningController@list'); //TODO
-        $api->get('cleaning/{number}', 'CleaningController@show'); //TODO
-        $api->post('cleaning', 'CleaningController@store'); //TODO
-        $api->put('cleaning/{number}', 'CleaningController@update'); //TODO
-        $api->put('cleaning/start/{number}', 'CleaningController@start'); //TODO
-        $api->put('cleaning/completed/{number}', 'CleaningController@completed'); //TODO
+        $api->get('cleaning', 'CleaningController@list');
+        $api->get('cleaning/{number}', 'CleaningController@show');
+        $api->post('cleaning', 'CleaningController@store');
+        $api->put('cleaning/{number}', 'CleaningController@update');
+        $api->put('cleaning/start/{number}', 'CleaningController@start');
+        $api->put('cleaning/completed/{number}', 'CleaningController@completed');
         $api->delete('cleaning/delete/{number}', 'CleaningController@delete'); //TODO
         //Reservation
         $api->get('reservation', 'ReservationController@list'); //TODO

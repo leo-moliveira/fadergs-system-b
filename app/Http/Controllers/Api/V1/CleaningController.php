@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Classes\Helpers;
 use App\Models\Cleaning;
+use App\Models\Rooms;
+use App\Transformers\CleaningTransformer;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -16,16 +18,97 @@ class CleaningController extends BaseController
         $this->cleaning = $cleaning;
     }
 
-    public function list()
+    /**
+     * @OA\Get (
+     *     path="/api/cleaning",
+     *     tags={"Cleaning"},
+     *     summary = "Get list of all rooms on cleaning process, desconsider status",
+     *     @OA\Response(
+     *         response="200",
+     *         description="Return List of all rooms"
+     *     ),
+     *     security={{"JWT":{}}}
+     * )
+     * @return \Dingo\Api\Http\Response
+     */
+    public function list(Request $request)
     {
+        //Check permissions
+        if (!Helpers::validateUserRole($request->user(), ['admin', 'manager','employee'])){
+            return $this->response->errorUnauthorized(trans('unauthorized'));
+        }
+
+        $cleaning = $this->cleaning->paginate(25);
+        return $this->response->paginator($cleaning, new CleaningTransformer());
+    }
+
+    /**
+     * @OA\Get (
+     *     path="/api/cleaning/{number}",
+     *     tags={"Cleaning"},
+     *     summary = "Get information of a room on cleaning process",
+     *     @OA\Parameter(
+     *         name="number",
+     *         in="path",
+     *         description="Number of room to show",
+     *         required=true,
+     *         @OA\Schema(type="number")
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Return List of all rooms"
+     *     ),
+     *     security={{"JWT":{}}}
+     * )
+     * @return \Dingo\Api\Http\Response
+     */
+    public function show(Request $request, $id)
+    {
+        //Check permissions
+        if (!Helpers::validateUserRole($request->user(), ['admin', 'manager','employee'])){
+            return $this->response->errorUnauthorized(trans('unauthorized'));
+        }
+
+        try {
+            $cleaning = $this->cleaning->findOrFail($id);
+            return $this->response->item($cleaning, new CleaningTransformer());
+        }catch (\Exception $exception){
+            return $this->response->errorNotFound();
+        }
 
     }
 
-    public function show()
-    {
-
-    }
-
+    /**
+     * @OA\Post (
+     *     path="/api/cleaning",
+     *     tags={"Cleaning"},
+     *     summary = "Save room to clean on database",
+     *     security={{"JWT":{}}},
+     *     @OA\RequestBody(
+     *          required=true,
+     *          description="Room to insert in database",
+     *          @OA\JsonContent(
+     *              required={"room_number","manager_id","employee_id"},
+     *              @OA\Property(property="room_number", type="integer", example="101"),
+     *              @OA\Property(property="manager_id", type="integer", example="2"),
+     *              @OA\Property(property="employee_id", type="integer", example="3"),
+     *          ),
+     *     ),
+     *     @OA\Response(
+     *          response=201,
+     *          description="Created",
+     *      ),
+     *     @OA\Response(
+     *          response=400,
+     *          description="Not Allowed, cleaning already exists",
+     *      ),
+     *     @OA\Response(
+     *          response=404,
+     *          description="Not found, room maybe it doesn't exist",
+     *      ),
+     * )
+     * @param Request $request
+     */
     public function store(Request $request)
     {
         //Check permissions
@@ -40,12 +123,24 @@ class CleaningController extends BaseController
             'employee_id' => 'required|integer'
         ]);
         if ($validator->fails()) {
-            return $this->errorBadRequest($validator->messages());
+            return $this->response->errorBadRequest($validator->messages());
+        }
+
+        //validate room
+        if(!Rooms::find($request->get('room_number'))){
+            return $this->response->errorNotFound(trans('cleaning.notFound'));
+        }
+
+        //validate cleaning
+        if(Cleaning::where('rooms_id', $request->get('room_number'))
+            ->where('status','to-clean')){
+            //->whereDate('created_at', '=>', Carbon::now()->toDateTimeString())){
+            return $this->response->errorBadRequest(trans('cleaning.alreadyExists'));
         }
 
         //Insert room
         $atributes = [
-            'rooms_id'       => $request->get('room_number'),
+            'rooms_id'          => $request->get('room_number'),
             'manager_id'        => $request->get('manager_id'),
             'employee_id'       => $request->get('employee_id'),
             'cleaning_date'     => null,
@@ -54,30 +149,262 @@ class CleaningController extends BaseController
         ];
 
         if(!$this->cleaning->create($atributes)){
-            dd($this->cleaning);die();
             return $this->response->error();
         }
 
         return $this->response->created(trans('cleaning.sucess'));
     }
 
-    public function update()
+    /**
+     * @OA\Put (
+     *     path="/api/cleaning/{number}",
+     *     tags={"Cleaning"},
+     *     summary = "Update room to clean on data base",
+     *     @OA\RequestBody(
+     *          required=false,
+     *          description="Data to the room",
+     *          @OA\MediaType(
+     *           mediaType="application/x-www-form-urlencoded",
+     *           @OA\Schema(
+     *               type="object",
+     *               @OA\Property(property="manager_id", type="integer", example="2"),
+     *               @OA\Property(property="employee_id", type="integer", example="3"),
+     *               @OA\Property(property="status", type="string", example="clean"),
+     *               @OA\Property(property="cleaning_date", type="date", example="2021-11-02 18:14:18"))
+     *           )
+     *     ),
+     *     @OA\Parameter(
+     *         name="number",
+     *         in="path",
+     *         description="Number of room to update",
+     *         required=true,
+     *         @OA\Schema(type="number")
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="OK",
+     *         @OA\JsonContent()
+     *     ),
+     *     @OA\Response(
+     *         response="404",
+     *         description="Room not found",
+     *         @OA\JsonContent()
+     *     ),
+     *     security={{"JWT":{}}}
+     * )
+     * @param Request $request
+     */
+    public function update(Request $request,$number)
     {
+        //Check permissions
+        if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
+            return $this->response->errorUnauthorized(trans('rooms.unauthorized'));
+        }
+
+        //Validate request
+        $validator = \Validator::make(["number" => $number], [
+            'number' => 'required|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->errorBadRequest($validator->messages());
+        }
+
+        $cleaning = Cleaning::findOrFail($number);
+
+        if (! $cleaning) {
+            return $this->response->errorNotFound();
+        }
+
+        $validator = \Validator::make($request->input(), [
+            'room_number'   => 'integer',
+            'manager_id'    => 'integer',
+            'employee_id'   => 'integer',
+            'cleaning_date' => 'date',
+            'status'        => 'string'
+        ]);
+
+        if ($validator->fails()) {
+            return $this->errorBadRequest($validator->messages());
+        }
+
+        $cleaning->rooms_id = ($request->get('room_number') != null) ? $request->get('room_number') : $cleaning->rooms_id;
+        $cleaning->manager_id = ($request->get('manager_id') != null) ? $request->get('manager_id') : $cleaning->status;
+        $cleaning->employee_id = ($request->get('employee_id') != null) ? $request->get('employee_id') : $cleaning->price;
+        $cleaning->cleaning_date = ($request->get('cleaning_date') != null) ? $request->get('cleaning_date') : $cleaning->description;
+        $cleaning->status = ($request->get('status') != null) ? $request->get('status') : $cleaning->description;
+
+        $cleaning->update();
+
+        return $this->response->noContent()->setStatusCode(200);
+    }
+
+    /**
+     * @OA\Delete (
+     *     path="/api/cleaning/delete/{number}",
+     *     tags={"Cleaning"},
+     *     summary = "Delete a room on cleaning process",
+     *     security={{"JWT":{}}},
+     *     @OA\Parameter(
+     *         name="number",
+     *         in="path",
+     *         description="Number of room to delete",
+     *         required=true,
+     *         @OA\Schema(type="number")
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Room deleted.",
+     *         @OA\JsonContent()
+     *     ),
+     *     @OA\Response(
+     *         response="404",
+     *         description="Room not found",
+     *         @OA\JsonContent()
+     *     )
+     * )
+     * @param Request $request
+     */
+    public function delete(Request $request,$number)
+    {
+        //Check permissions
+        if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
+            return $this->response->errorUnauthorized(trans('rooms.unauthorized'));
+        }
+
+        //Validate request
+        $validator = \Validator::make(["number" => $number], [
+            'number' => 'required|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->errorBadRequest($validator->messages());
+        }
+
+        $cleaning = Cleaning::findOrFail($number);
+
+        if (! $cleaning) {
+            return $this->response->errorNotFound();
+        }
+
+        if( !$cleaning->delete() ) {
+            return $this->response->errorInternal();
+        }
+
+        return $this->response->noContent()->setStatusCode(200);
 
     }
 
-    public function delete()
+    /**
+     * @OA\Put (
+     *     path="/api/cleaning/start/{number}",
+     *     tags={"Cleaning"},
+     *     summary = "Update room status to cleaning",
+     *     @OA\Parameter(
+     *         name="number",
+     *         in="path",
+     *         description="Number of room to update",
+     *         required=true,
+     *         @OA\Schema(type="number")
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="OK",
+     *         @OA\JsonContent()
+     *     ),
+     *     @OA\Response(
+     *         response="404",
+     *         description="Room not found",
+     *         @OA\JsonContent()
+     *     ),
+     *     security={{"JWT":{}}}
+     * )
+     * @param Request $request
+     */
+    public function start(Request $request,$number)
     {
+        //Check permissions
+        if (!Helpers::validateUserRole($request->user(), ['admin', 'manager','employee'])){
+            return $this->response->errorUnauthorized(trans('unauthorized'));
+        }
 
+        //Validate request
+        $validator = \Validator::make(["number" => $number], [
+            'number' => 'required|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->errorBadRequest($validator->messages());
+        }
+
+        $cleaning = Cleaning::findOrFail($number);
+
+        if (!$cleaning) {
+            return $this->response->errorNotFound();
+        }
+
+        if($cleaning->status != "to-clean"){
+            return $this->response->errorBadRequest(trans('cleaning.notToClean'));
+        }
+
+        $cleaning->status = "cleaning";
+        $cleaning->update();
+
+        return $this->response->noContent()->setStatusCode(200);
     }
 
-    public function start()
+    /**
+     * @OA\Put (
+     *     path="/api/cleaning/completed/{number}",
+     *     tags={"Cleaning"},
+     *     summary = "Update room status to completed",
+     *     @OA\Parameter(
+     *         name="number",
+     *         in="path",
+     *         description="Number of room to update",
+     *         required=true,
+     *         @OA\Schema(type="number")
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="OK",
+     *         @OA\JsonContent()
+     *     ),
+     *     @OA\Response(
+     *         response="404",
+     *         description="Room not found",
+     *         @OA\JsonContent()
+     *     ),
+     *     security={{"JWT":{}}}
+     * )
+     * @param Request $request
+     */
+    public function completed(Request $request,$number)
     {
+        //Check permissions
+        if (!Helpers::validateUserRole($request->user(), ['admin', 'manager','employee'])){
+            return $this->response->errorUnauthorized(trans('unauthorized'));
+        }
 
-    }
+        //Validate request
+        $validator = \Validator::make(["number" => $number], [
+            'number' => 'required|integer',
+        ]);
 
-    public function completed()
-    {
+        if ($validator->fails()) {
+            return $this->errorBadRequest($validator->messages());
+        }
 
+        $cleaning = Cleaning::findOrFail($number);
+
+        if (!$cleaning) {
+            return $this->response->errorNotFound();
+        }
+
+        $cleaning->status = "clean";
+        $cleaning->cleaning_date = Carbon::now()->toDateTimeString();
+        $cleaning->update();
+
+        return $this->response->noContent()->setStatusCode(200);
     }
 }
