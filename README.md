@@ -19,6 +19,8 @@ On the command prompt run the following commands:
  $ cp .env.example .env (edit it with your database information)
  $ php artisan jwt:secret
  $ php artisan migrate
+ $ php artisan db:seed --class=EmployeesTableSeeder
+ $ php artisan db:seed --class=UsersTableSeeder
  $ php -S localhost:8000 -t ./public/index.php
 ```
 
