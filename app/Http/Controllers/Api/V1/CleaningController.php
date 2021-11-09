@@ -173,7 +173,7 @@ class CleaningController extends BaseController
 
         //validate cleaning
         if(Cleaning::where('rooms_id', $request->get('room_number'))
-            ->where('status','to-clean')){
+            ->where('status','to-clean')->count() != 0){
             //->whereDate('created_at', '=>', Carbon::now()->toDateTimeString())){
             return $this->response->errorBadRequest(trans('cleaning.alreadyExists'));
         }
