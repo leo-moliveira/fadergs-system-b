@@ -40,12 +40,41 @@ class ClientsController extends BaseController
         return $this->response->paginator($clients, new ClientTransformer());
     }
 
+    /**
+     * @OA\Get (
+     *     path="/api/clients/{id}",
+     *     tags={"Clients"},
+     *     summary = "Get client data by id.",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="User id from client",
+     *         required=true,
+     *         @OA\Schema(type="number")
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Rooms information.",
+     *         @OA\JsonContent()
+     *     ),
+     *     security={{"JWT":{}}}
+     * )
+     * @param $number
+     * @return \Dingo\Api\Http\Response|void
+     */
     public function show(Request $request, $id){
         //Check permissions
         if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
             return $this->response->errorUnauthorized(trans('client.unauthorized'));
         }
 
+        $client = $this->client->client->with('user','address','phone')->findOrFail($id);
+
+        if($client){
+            return $this->response->item($client, new ClientTransformer());
+        }
+
+        return $this->response->errorNotFound();
     }
 
     public function clientsByStatus(Request $request){

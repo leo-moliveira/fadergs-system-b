@@ -35,7 +35,7 @@ $api->version('v1', ['namespace' => 'App\Http\Controllers\Api\V1'], function ($a
 
         //client
         $api->get('clients/list', 'ClientsController@list');
-        $api->get('clients/{id}', 'ClientsController@show'); //TODO
+        $api->get('clients/{id}', 'ClientsController@show');
         $api->get('clients/status/{status}', 'ClientsController@clientsByStatus'); //TODO
         $api->post('clients', 'ClientsController@store');
         $api->post('clients/list', 'ClientsController@storeList'); //TODO
