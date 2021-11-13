@@ -23,7 +23,7 @@ class CreateClientsTable extends Migration
             $table->string('rg',20)->nullable(true);
             $table->string('gender',100);
             $table->boolean('status');
-            $table->timestamp('last_reservation');
+            $table->timestamp('last_reservation')->nullable(true);
             $table->timestamp('registration_date');
             $table->timestamps();
             $table->primary('user_id');

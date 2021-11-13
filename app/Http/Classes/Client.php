@@ -4,7 +4,7 @@ namespace App\Http\Classes;
 
 use App\Models\User;
 use App\Models\Client as ModelClient;
-use App\Models\Address;
+use App\Models\Addreses;
 use App\Models\Phone;
 use Carbon\Carbon;
 
@@ -12,15 +12,15 @@ class Client
 {
     private $user;
     private $client;
-    private $address;
+    private $addreses;
     private $phones;
 
-    public function __construct(User $user,ModelClient $client,Address $address, Phone $phones)
+    public function __construct()
     {
-        $this->user = $user;
-        $this->client = $client;
-        $this->address = $address;
-        $this->phones = $phones;
+        $this->user = new User();
+        $this->client = new ModelClient();
+        $this->addreses = new Addreses();
+        $this->phones[] = new Phone();
     }
 
     public function create($objCleintInfo)
@@ -29,7 +29,7 @@ class Client
         $fullNameArray = explode(" ", $objCleintInfo->full_name);
         $userName = mb_strtolower($fullNameArray[array_key_first($fullNameArray)]) . "."
             .mb_strtolower($fullNameArray[array_key_last($fullNameArray)]);
-        $userAtributes = [
+        $userAttributes = [
             'user_name'     => $userName,
             'password'      => app('hash')->make("1234"),
             'role'          => "client",
@@ -38,32 +38,55 @@ class Client
         ];
 
         $counter = 0;
-        while(User::where('user_name', $userAtributes['user_name'])->count() != 0){
+        while(User::where('user_name', $userAttributes['user_name'])->count() != 0){
             $counter++;
-            $userAtributes['user_name'] = $userAtributes['user_name'].$counter;
+            $userAttributes['user_name'] = $userName.$counter;
         }
 
-        $this->user = User::create($userAtributes);
+        $this->user = User::create($userAttributes);
 
         //create client
-        $clientAtributes = [
-            'user_id'       => $this->user->id,
-            'first_name'    => $fullNameArray[array_key_first($fullNameArray)],
-            'last_name'     => $fullNameArray[array_key_last($fullNameArray)],
-            'full_name'     => $objCleintInfo->full_name,
-            'email'         => $objCleintInfo->email,
-            'cpf'           => $objCleintInfo->cpf,
-            'rg'            => $objCleintInfo->rg,
-            'gender'        => $objCleintInfo->gender,
-            'status'        => $objCleintInfo->status,
-            'created_at'    => $objCleintInfo->created_at
+        $clientAttributes = [
+            'user_id'           => $this->user->id,
+            'first_name'        => $fullNameArray[array_key_first($fullNameArray)],
+            'last_name'         => $fullNameArray[array_key_last($fullNameArray)],
+            'full_name'         => $objCleintInfo->full_name,
+            'email'             => $objCleintInfo->email,
+            'cpf'               => $objCleintInfo->cpf,
+            'rg'                => $objCleintInfo->rg,
+            'gender'            => $objCleintInfo->gender,
+            'status'            => $objCleintInfo->status,
+            'registration_date' => $objCleintInfo->registration_date,
+            'created_at'        => Carbon::now()->toDateTimeString()
         ];
-        $this->client = ModelClient::create($clientAtributes);
+
+        $this->client = ModelClient::create($clientAttributes);
 
         //create address
-        $clientAddressAtributes = [
-
+        $clientAddressAttributes = [
+            'user_id'           => $this->user->id,
+            'address'           => $objCleintInfo->address,
+            'number'            => $objCleintInfo->number,
+            'complement'        => $objCleintInfo->complement,
+            'city'              => $objCleintInfo->city,
+            'state'             => $objCleintInfo->state,
+            'country'           => $objCleintInfo->country,
+            'zip_code'          => $objCleintInfo->zip_code,
+            'active'            => true,
+            'created_at'        => Carbon::now()->toDateTimeString()
         ];
-        $this->address = Address::create($clientAddressAtributes);
+        $this->addreses = Addreses::create($clientAddressAttributes);
+
+        //create phones
+        foreach ($objCleintInfo->phone_numbers as $phone){
+            $phoneAttributes = [
+                'user_id'       => $this->user->id,
+                'number'        => $phone,
+                'created_at'    => Carbon::now()->toDateTimeString()
+            ];
+            $this->phones[] = Phone::create($phoneAttributes);
+        }
+dd($this);die();
+        return $this;
     }
 }

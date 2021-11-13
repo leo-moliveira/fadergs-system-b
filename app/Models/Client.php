@@ -13,7 +13,7 @@ class Client extends BaseModel {
      * @var array
      */
     protected $fillable = [
-        'first_name', 'last_name', 'email', 'cpf', 'rg', 'gender', 'status', 'last_reservation', 'registration_date'
+        'user_id','first_name', 'last_name', 'full_name','email', 'cpf', 'rg', 'gender', 'status', 'last_reservation', 'registration_date'
     ];
 
     public function user(){

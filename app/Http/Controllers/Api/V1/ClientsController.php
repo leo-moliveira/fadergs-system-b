@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Classes\Helpers;
-use App\Models\Client;
-use App\Models\User;
+use App\Models\Client as ModelClient;
+use App\Http\Classes\Client;
 use App\Transformers\ClientTransformer;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
+
 
 class ClientsController extends BaseController
 {
@@ -72,7 +72,7 @@ class ClientsController extends BaseController
      *          required=true,
      *          description="Client to insert on database",
      *          @OA\JsonContent(
-     *              required={"full_name","email","cpf","gender","status","registration_date"},
+     *              required={"full_name","cpf","gender","status","registration_date"},
      *              @OA\Property(property="full_name", type="string", example="Erico Verissimo"),
      *              @OA\Property(property="email", type="e-mail", example="a@a.com"),
      *              @OA\Property(property="cpf", type="number", example="17966177092"),
@@ -80,13 +80,14 @@ class ClientsController extends BaseController
      *              @OA\Property(property="gender", type="string", example="M"),
      *              @OA\Property(property="status", type="boolean", example="1"),
      *              @OA\Property(property="registration_date", type="date-time", example="2021-10-31 17:12:52"),
-     *              @OA\Property(property="address", type="string", example=""),
-     *              @OA\Property(property="number", type="string", example=""),
-     *              @OA\Property(property="complement", type="string", example=""),
-     *              @OA\Property(property="city", type="string", example=""),
-     *              @OA\Property(property="state", type="string", example=""),
-     *              @OA\Property(property="country", type="string", example=""),
-     *              @OA\Property(property="zip_code", type="string", example=""),
+     *              @OA\Property(property="address", type="string", example="Rua a"),
+     *              @OA\Property(property="number", type="string", example="1234"),
+     *              @OA\Property(property="complement", type="string", example="bloco a"),
+     *              @OA\Property(property="city", type="string", example="Porto Alegre"),
+     *              @OA\Property(property="state", type="string", example="RS"),
+     *              @OA\Property(property="country", type="string", example="Brasil"),
+     *              @OA\Property(property="zip_code", type="string", example="80657222"),
+     *              @OA\Property(property="phone_numbers", type="string|array", example="9632586,365236,36523,36523"),
      *          ),
      *     ),
      *     @OA\Response(
@@ -97,7 +98,6 @@ class ClientsController extends BaseController
      * @param Request $request
      */
     public function store(Request $request){
-        dd($request->toArray());die();
         //Check permissions
         if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
             return $this->response->errorUnauthorized(trans('client.unauthorized'));
@@ -123,34 +123,29 @@ class ClientsController extends BaseController
             'zip_code' => 'required|numeric',
 
             //phone
-            'numbers.*' => 'string|distinct',
+            'phone_numbers.*' => 'string|distinct',
         ]);
         if ($validator->fails()) {
             return $this->errorBadRequest($validator->messages());
         }
 
         //validate client
-        $client = Client::where('cpf', $request->get('cpf'));
+        $client = ModelClient::where('cpf', $request->get('cpf'));
 
         if($client->count() !== 0){
             return $this->response->errorBadRequest(trans('client.alreadyRegistered'));
         }
 
+        $requestObject = (object)$request->toArray();
 
+        if(!is_array($requestObject->phone_numbers) && is_string($requestObject->phone_numbers)){
+            $requestObject->phone_numbers = explode(',',$requestObject->phone_numbers);
+        }
 
+        $newClient = new Client();
+        $newClient->create($requestObject);
 
-
-        //create address
-        $addressAtributes = [];
-
-        //create phone
-        $phoneAtributes = [];
-
-
-        //TODO: Cria cliente
-        //TODO: Cria endereço
-        //TODO: Cria telefones
-        //TODO: SALVA TUDO e respode ok
+        return $this->response->created(trans('client.sucess'));
     }
     /*** private ***/
 
