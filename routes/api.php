@@ -23,6 +23,7 @@ $api->version('v1', ['namespace' => 'App\Http\Controllers\Api\V1'], function ($a
     $api->group(['middleware' => 'api.auth'], function ($api) {
         //User
         $api->get('user','UsersController@index');
+
         //Rooms
         $api->get('rooms','RoomsController@index');
         $api->get('rooms/occupied','RoomsController@listOccupiedRooms');
@@ -31,12 +32,14 @@ $api->version('v1', ['namespace' => 'App\Http\Controllers\Api\V1'], function ($a
         $api->post('rooms','RoomsController@store');
         $api->delete('rooms/delete/{number}','RoomsController@delete');
         $api->put('rooms/{number}', 'RoomsController@update');
+
         //client
-        $api->get('clients', 'ClientsController@list');
+        $api->get('clients/list', 'ClientsController@list');
         $api->get('clients/{id}', 'ClientsController@show'); //TODO
         $api->get('clients/status/{status}', 'ClientsController@clientsByStatus'); //TODO
-        $api->post('clients/import/list', 'ClientsController@importList'); //TODO
-        $api->post('clients/import', 'ClientsController@import'); //TODO
+        $api->post('clients', 'ClientsController@store'); //TODO
+        $api->post('clients/list', 'ClientsController@storeList'); //TODO
+
         //Cleaning
         $api->get('cleaning', 'CleaningController@list');
         $api->get('cleaning/{number}', 'CleaningController@show');
@@ -46,6 +49,7 @@ $api->version('v1', ['namespace' => 'App\Http\Controllers\Api\V1'], function ($a
         $api->put('cleaning/start/{id}', 'CleaningController@start');
         $api->put('cleaning/completed/{id}', 'CleaningController@completed');
         $api->delete('cleaning/delete/{id}', 'CleaningController@delete');
+
         //Reservation
         $api->get('reservation', 'ReservationController@list'); //TODO
         $api->get('reservation/{id}', 'ReservationController@show'); //TODO
@@ -53,6 +57,7 @@ $api->version('v1', ['namespace' => 'App\Http\Controllers\Api\V1'], function ($a
         $api->post('reservation', 'ReservationController@store'); //TODO
         $api->put('reservation/{number}', 'ReservationController@update'); //TODO
         $api->delete('reservation/delete/{number}', 'ReservationController@delete'); //TODO
+
         //Payment
         $api->get('payment/client/{client_id}', 'PaymentController@accountByClient'); //TODO
     });

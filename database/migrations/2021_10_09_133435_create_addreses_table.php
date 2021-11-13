@@ -16,7 +16,6 @@ class CreateAddresesTable extends Migration
         Schema::create('addreses', function (Blueprint $table) {
             $table->increments('id')->unique()->nullable(false);
             $table->integer('user_id')->nullable();
-            $table->integer('employee_id')->nullable();
             $table->string('address',200)->nullable(false);
             $table->integer('number')->nullable(false);
             $table->string('complement',100)->nullable(false);
@@ -24,6 +23,7 @@ class CreateAddresesTable extends Migration
             $table->string('state',100)->nullable(false);
             $table->string('country',100)->nullable(false);
             $table->integer('zip_code')->nullable(false);
+            $table->boolean('active');
             $table->timestamps();
         });
     }

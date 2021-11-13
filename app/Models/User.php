@@ -20,7 +20,7 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
      * @var array
      */
     protected $fillable = [
-        'user_name', 'status', 'last_login_at', 'role'
+        'user_name', 'status', 'last_login_at', 'role', 'password'
     ];
 
     /**
