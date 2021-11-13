@@ -77,11 +77,53 @@ class ClientsController extends BaseController
         return $this->response->errorNotFound();
     }
 
-    public function clientsByStatus(Request $request){
+    /**
+     * @OA\Get (
+     *     path="/api/clients/status/{status}",
+     *     tags={"Clients"},
+     *     summary = "Get list of all clients by status",
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="path",
+     *         description="Status to search",
+     *         required=true,
+     *         @OA\Schema(
+     *                      type="string",
+     *                      enum={"blocked", "unlocked"},
+     *                  )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Return List of all rooms"
+     *     ),
+     *     security={{"JWT":{}}}
+     * )
+     * @return \Dingo\Api\Http\Response
+     */
+    public function clientsByStatus(Request $request, $status){
         //Check permissions
         if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
             return $this->response->errorUnauthorized(trans('client.unauthorized'));
         }
+        switch ($status){
+            case "blocked":
+                $status = 1;
+                break;
+            case "unlocked":
+                $status = 0;
+                break;
+            default:
+                $status = -1;
+                break;
+        }
+        if($status === -1){
+            return $this->response->errorBadRequest(trans('invalid'));
+        }
+
+        $clients = $this->client->client->with('user','address','phone')
+            ->where('status', '=', $status)->paginate(25);
+
+        return $this->response->paginator($clients, new ClientTransformer());
     }
 
     public function importList(Request $request){
