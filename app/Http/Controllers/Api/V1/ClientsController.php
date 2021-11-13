@@ -35,8 +35,8 @@ class ClientsController extends BaseController
         if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
             return $this->response->errorUnauthorized(trans('client.unauthorized'));
         }
+        $clients = $this->client->client->with('user','address','phone')->paginate(25);
 
-        $clients = $this->client->with(['user'])->paginate(25);
         return $this->response->paginator($clients, new ClientTransformer());
     }
 

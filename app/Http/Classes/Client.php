@@ -10,10 +10,10 @@ use Carbon\Carbon;
 
 class Client
 {
-    private $user;
-    private $client;
-    private $addreses;
-    private $phones;
+    public $user;
+    public $client;
+    public $addreses;
+    public $phones;
 
     public function __construct()
     {
@@ -86,7 +86,9 @@ class Client
             ];
             $this->phones[] = Phone::create($phoneAttributes);
         }
-dd($this);die();
+
         return $this;
     }
+
+
 }

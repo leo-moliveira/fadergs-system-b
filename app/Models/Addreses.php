@@ -21,5 +21,4 @@ class Addreses extends BaseModel
         'updated_at'
     ];
 
-
 }

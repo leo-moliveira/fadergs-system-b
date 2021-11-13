@@ -16,7 +16,18 @@ class Client extends BaseModel {
         'user_id','first_name', 'last_name', 'full_name','email', 'cpf', 'rg', 'gender', 'status', 'last_reservation', 'registration_date'
     ];
 
-    public function user(){
+    public function user()
+    {
         return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
+    public function address()
+    {
+        return $this->hasMany(Addreses::class, 'user_id', 'user_id');
+    }
+
+    public function phone()
+    {
+        return $this->hasMany(Phone::class,'user_id','user_id');
     }
 }
