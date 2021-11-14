@@ -27,8 +27,14 @@ class Client
     {
         //create user name
         $fullNameArray = explode(" ", $objCleintInfo->full_name);
-        $userName = mb_strtolower($fullNameArray[array_key_first($fullNameArray)]) . "."
-            .mb_strtolower($fullNameArray[array_key_last($fullNameArray)]);
+
+        if(count($fullNameArray) > 1) {
+            $userName = mb_strtolower($fullNameArray[array_key_first($fullNameArray)]) . "."
+                . mb_strtolower($fullNameArray[array_key_last($fullNameArray)]);
+        }else{
+            $userName = $objCleintInfo->full_name;
+        }
+
         $userAttributes = [
             'user_name'     => $userName,
             'password'      => app('hash')->make("1234"),
@@ -51,7 +57,7 @@ class Client
             'first_name'        => $fullNameArray[array_key_first($fullNameArray)],
             'last_name'         => $fullNameArray[array_key_last($fullNameArray)],
             'full_name'         => $objCleintInfo->full_name,
-            'email'             => $objCleintInfo->email,
+            'email'             => (property_exists($objCleintInfo,'email')) ? $objCleintInfo->email : null,
             'cpf'               => $objCleintInfo->cpf,
             'rg'                => $objCleintInfo->rg,
             'gender'            => $objCleintInfo->gender,

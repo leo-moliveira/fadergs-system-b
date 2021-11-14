@@ -38,7 +38,7 @@ $api->version('v1', ['namespace' => 'App\Http\Controllers\Api\V1'], function ($a
         $api->get('clients/{id}', 'ClientsController@show');
         $api->get('clients/status/{status}', 'ClientsController@clientsByStatus');
         $api->post('clients', 'ClientsController@store');
-        $api->post('clients/list', 'ClientsController@storeList'); //TODO
+        $api->post('clients/list', 'ClientsController@storeList');
 
         //Cleaning
         $api->get('cleaning', 'CleaningController@list');

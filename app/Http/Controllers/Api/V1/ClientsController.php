@@ -107,10 +107,10 @@ class ClientsController extends BaseController
         }
         switch ($status){
             case "blocked":
-                $status = 1;
+                $status = false;
                 break;
             case "unlocked":
-                $status = 0;
+                $status = true;
                 break;
             default:
                 $status = -1;
@@ -126,11 +126,77 @@ class ClientsController extends BaseController
         return $this->response->paginator($clients, new ClientTransformer());
     }
 
-    public function importList(Request $request){
+    /**
+     * @OA\Post (
+     *     path="/api/clients/list",
+     *     tags={"Clients"},
+     *     summary = "Save list of client on database",
+     *     security={{"JWT":{}}},
+     *     @OA\RequestBody(
+     *          required=true,
+     *          description="List of clients to insert on database",
+     *     ),
+     *     @OA\Response(
+     *          response=200,
+     *          description="OK",
+     *      ),
+     * )
+     * @param Request $request
+     */
+    public function storeList(Request $request){
         //Check permissions
         if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
             return $this->response->errorUnauthorized(trans('client.unauthorized'));
         }
+        $validatorArray = [
+            //client
+            'full_name' => 'required|string',
+            'cpf' => 'required|string',
+            'rg' => 'string',
+            'gender' => 'string',
+            'status' => 'required|boolean',
+            'registration_date' => 'required|date',
+
+            //address
+            'address' => 'required|string',
+            'number' => 'required|numeric',
+            'complement' => 'string',
+            'city' => 'required|string',
+            'state' => 'required|string',
+            'country' => 'required|string',
+            'zip_code' => 'required|numeric',
+
+            //phone
+            'phone_numbers.*' => 'alpha_num|distinct',
+        ];
+        $requestArray = $request->json()->all();
+
+        foreach ($requestArray['list'] as $item){
+            //Validate request
+            $validator = \Validator::make($item, $validatorArray);
+            if ($validator->fails()) {
+                return $this->errorBadRequest($validator->messages());
+            }
+
+            //validate client
+            $client = ModelClient::where('cpf', $item['cpf']);
+
+            if($client->count() !== 0){
+                return $this->response->errorBadRequest(trans('client.alreadyRegistered'));
+            }
+
+            $requestObject = (object)$item;
+
+            if(!is_array($requestObject->phone_numbers) && is_string($requestObject->phone_numbers)){
+                $requestObject->phone_numbers = explode(',',$requestObject->phone_numbers);
+            }
+
+            $newClient = new Client();
+            $newClient->create($requestObject);
+
+        }
+        return $this->response->created(trans('client.sucess'));
+
     }
 
     /**
@@ -194,7 +260,7 @@ class ClientsController extends BaseController
             'zip_code' => 'required|numeric',
 
             //phone
-            'phone_numbers.*' => 'string|distinct',
+            'phone_numbers.*' => 'alpha_num|distinct',
         ]);
         if ($validator->fails()) {
             return $this->errorBadRequest($validator->messages());
