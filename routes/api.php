@@ -28,6 +28,7 @@ $api->version('v1', ['namespace' => 'App\Http\Controllers\Api\V1'], function ($a
         $api->get('rooms','RoomsController@index');
         $api->get('rooms/occupied','RoomsController@listOccupiedRooms');
         $api->get('rooms/available','RoomsController@listAvailableRooms');
+        $api->get('rooms/status/{status}','RoomsController@listByStatus');
         $api->get('rooms/{id}','RoomsController@show');
         $api->post('rooms','RoomsController@store');
         $api->delete('rooms/delete/{number}','RoomsController@delete');

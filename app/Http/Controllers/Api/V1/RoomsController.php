@@ -79,6 +79,45 @@ class RoomsController extends BaseController
 
     /**
      * @OA\Get (
+     *     path="/api/rooms/status/{status}",
+     *     tags={"Rooms"},
+     *     summary = "Get list of all rooms by status",
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="path",
+     *         description="Status to search",
+     *         required=true,
+     *         @OA\Schema(
+     *                      type="string",
+     *                      enum={"Available", "Occupied"},
+     *                  )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Return List of all rooms"
+     *     ),
+     *     security={{"JWT":{}}}
+     * )
+     * @return \Dingo\Api\Http\Response
+     * */
+    public function listByStatus(Request $request, $status){
+
+        switch ($status){
+            case 'Occupied':
+                $status = 1;
+                break;
+            case 'Available':
+            default:
+                $status = 0;
+                break;
+        }
+
+        $rooms = $this->rooms->where('status', '=', $status)->paginate(25);
+        return $this->response->paginator($rooms, new RoomTransformer());
+    }
+
+    /**
+     * @OA\Get (
      *     path="/api/rooms/{number}",
      *     tags={"Rooms"},
      *     summary = "Get data for room number.",
