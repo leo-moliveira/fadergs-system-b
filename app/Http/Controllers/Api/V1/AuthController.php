@@ -82,7 +82,8 @@ class AuthController extends BaseController
             $this->response->errorInternal('could_not_create_token');
         }
         // all good so return the token
-        return $this->response->array(compact('token'));
+        $expire_date = date('d/m/Y H:i:s',time() + env('JWT_TTL') * 60);
+        return $this->response->array(compact('token','expire_date'));
     }
 
     //private
