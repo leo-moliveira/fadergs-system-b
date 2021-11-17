@@ -192,7 +192,7 @@ class CleaningController extends BaseController
             return $this->response->error();
         }
 
-        return $this->response->created(trans('cleaning.sucess'));
+        return $this->response->created(trans('cleaning.success'));
     }
 
     /**

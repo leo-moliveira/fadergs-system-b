@@ -89,7 +89,7 @@ class RoomsController extends BaseController
      *         required=true,
      *         @OA\Schema(
      *                      type="string",
-     *                      enum={"Available", "Occupied"},
+     *                      enum={"Available", "Occupied","Cleaning"},
      *                  )
      *     ),
      *     @OA\Response(
@@ -105,6 +105,9 @@ class RoomsController extends BaseController
         switch ($status){
             case 'Occupied':
                 $status = 1;
+                break;
+            case 'Cleaning':
+                $status = 2;
                 break;
             case 'Available':
             default:
@@ -202,7 +205,7 @@ class RoomsController extends BaseController
             return $this->response->error();
         }
 
-         return $this->response->created(trans('rooms.sucess'));
+         return $this->response->created(trans('rooms.success'));
     }
 
     /**

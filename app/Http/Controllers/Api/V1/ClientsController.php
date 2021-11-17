@@ -195,7 +195,7 @@ class ClientsController extends BaseController
             $newClient->create($requestObject);
 
         }
-        return $this->response->created(trans('client.sucess'));
+        return $this->response->created(trans('client.success'));
 
     }
 
@@ -282,7 +282,7 @@ class ClientsController extends BaseController
         $newClient = new Client();
         $newClient->create($requestObject);
 
-        return $this->response->created(trans('client.sucess'));
+        return $this->response->created(trans('client.success'));
     }
     /*** private ***/
 
