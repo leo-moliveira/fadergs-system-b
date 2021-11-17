@@ -276,7 +276,6 @@ class RoomsController extends BaseController
      *           mediaType="application/x-www-form-urlencoded",
      *           @OA\Schema(
      *               type="object",
-     *               @OA\Property(property="number", type="string", example="101"),
      *               @OA\Property(property="status", type="integer", example="1"),
      *               @OA\Property(property="price", type="double", example="120.1"),
      *               @OA\Property(property="description", type="string", example="2 beds and 1 bathroom"))
@@ -325,7 +324,6 @@ class RoomsController extends BaseController
         }
 
         $validator = \Validator::make($request->input(), [
-            'number' => 'nullable|integer',
             'status' => 'nullable|integer',
             'price' => 'nullable|between:0,99.99',
             'description' => 'nullable|string'
@@ -334,7 +332,7 @@ class RoomsController extends BaseController
             return $this->errorBadRequest($validator->messages());
         }
 
-        $room->id = ($request->get('number') != null) ? $request->get('number') : $room->id;
+        $room->id = ($number != null) ? $number : $room->id;
         $room->status = ($request->get('status') != null) ? $request->get('status') : $room->status;
         $room->price = ($request->get('price') != null) ? $request->get('price') : $room->price;
         $room->description = ($request->get('description') != null) ? $request->get('description') : $room->description;
