@@ -94,8 +94,9 @@ class ReservationController extends BaseController
         //Validate DateStart and DateEnd
         $dateStart = \DateTime::createFromFormat('d/m/Y H:i:s',$request->get('date_start'));
         $dateEnd = \DateTime::createFromFormat('d/m/Y H:i:s',$request->get('date_end'));
+        $dateNow = new \DateTime('now',(new \DateTimeZone(env('APP_TIMEZONE'))));
 
-        if($dateStart >= $dateEnd){
+        if($dateStart >= $dateEnd || $dateStart > $dateNow || $dateEnd < $dateNow){
             return $this->response->error('reservation.dateError');
         }
 
