@@ -55,9 +55,9 @@ $api->version('v1', ['namespace' => 'App\Http\Controllers\Api\V1'], function ($a
         $api->get('reservation', 'ReservationController@list'); //TODO
         $api->get('reservation/{id}', 'ReservationController@show'); //TODO
         $api->get('reservation/client/{client_id}', 'ReservationController@reservationByClient'); //TODO
-        $api->post('reservation', 'ReservationController@store'); //TODO
-        $api->put('reservation/{number}', 'ReservationController@update'); //TODO
-        $api->delete('reservation/delete/{number}', 'ReservationController@delete'); //TODO
+        $api->post('reservation', 'ReservationController@store');
+        $api->put('reservation/{number}', 'ReservationController@update');
+        $api->delete('reservation/delete/{number}', 'ReservationController@delete');
 
         //Payment
         $api->get('payment/client/{client_id}', 'PaymentController@accountByClient'); //TODO
