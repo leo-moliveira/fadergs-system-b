@@ -176,13 +176,18 @@ class ReservationController extends BaseController
             return $this->response->errorNotFound('reservation.roomNotFound');
         }
 
+        if($room->status != 0)
+        {
+            return $this->response->error('reservation.busy',400);
+        }
+
         //Validate DateStart and DateEnd
         $dateStart = \DateTime::createFromFormat('d/m/Y H:i:s',$request->get('date_start'));
         $dateEnd = \DateTime::createFromFormat('d/m/Y H:i:s',$request->get('date_end'));
         $dateNow = new \DateTime('now',(new \DateTimeZone(env('APP_TIMEZONE'))));
 
         if($dateStart >= $dateEnd || $dateStart < $dateNow){
-            return $this->response->error('reservation.dateError');
+            return $this->response->error('reservation.dateError',400);
         }
 
         $dateDiffDays = $dateStart->diff($dateEnd)->days;
@@ -204,8 +209,11 @@ class ReservationController extends BaseController
         ];
 
         if(!$this->reservation->create($atributes)){
-            return $this->response->error('reservation.error');
+            return $this->response->error('reservation.error',400);
         }
+
+        $room->status = 1;
+        $room->update();
 
         return $this->response->created(trans('reservation.success'));
     }
@@ -229,7 +237,8 @@ class ReservationController extends BaseController
      *               @OA\Property(property="check_in", type="date-time", example="10/10/2021 04:12:52"),
      *               @OA\Property(property="check_out", type="date-time", example="31/10/2021 17:00:00"),
      *               @OA\Property(property="price", type="double", example="200.2"),
-     *               @OA\Property(property="status", type="string", example="checkOut"))
+     *               @OA\Property(property="status", type="string", example="checkOut",description = "free, reserved,
+                                                                            checkIn,  checkOut, pendingPayment, paid"))
      *           )
      *     ),
      *     @OA\Parameter(
@@ -277,18 +286,69 @@ class ReservationController extends BaseController
             'status'        => 'nullable|string',
         ]);
 
-        if ($validator->fails()) {
+        if ($validator->fails() || !in_array($request->get('status'), Reservation::AVAILABLE_STATUS)) {
             return $this->errorBadRequest($validator->messages());
         }
 
         $reservation->client_id     = ($request->get('client_id')) ? $request->get('client_id') : $reservation->client_id;
-        $reservation->room_id       = ($request->get('room_number')) ? $request->get('room_number') : $reservation->client_id;
-        $reservation->date_start    = ($request->get('date_start')) ? $request->get('date_start') : $reservation->client_id;
-        $reservation->date_end      = ($request->get('date_end')) ? $request->get('date_end') : $reservation->client_id;
-        $reservation->check_in      = ($request->get('check_in')) ? $request->get('check_in') : $reservation->client_id;
-        $reservation->check_out     = ($request->get('check_out')) ? $request->get('check_out') : $reservation->client_id;
-        $reservation->price         = ($request->get('price')) ? $request->get('price') : $reservation->client_id;
-        $reservation->status        = ($request->get('status')) ? $request->get('status') : $reservation->client_id;
+        $reservation->room_id       = ($request->get('room_number')) ? $request->get('room_number') : $reservation->room_id;
+        $reservation->date_start    = ($request->get('date_start')) ? $request->get('date_start') : $reservation->date_start;
+        $reservation->date_end      = ($request->get('date_end')) ? $request->get('date_end') : $reservation->date_end;
+        $reservation->check_in      = ($request->get('check_in')) ? $request->get('check_in') : $reservation->check_in;
+        $reservation->check_out     = ($request->get('check_out')) ? $request->get('check_out') : $reservation->check_out;
+        $reservation->price         = ($request->get('price')) ? $request->get('price') : $reservation->price;
+        $reservation->status        = ($request->get('status')) ? $request->get('status') : $reservation->status;
+
+        $reservation->update();
+        return $this->response->noContent()->setStatusCode(200);
+    }
+
+    /**
+     * @OA\Put (
+     *     path="/api/reservation/{id}/{status}",
+     *     tags={"Reservation"},
+     *     summary = "Update reservation status",
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="path",
+     *         description="Status to update",
+     *         required=true,
+     *         @OA\Schema(
+     *                      type="string",
+     *                      enum={"free", "reserved", "checkIn",  "checkOut", "pendingPayment", "paid"},
+     *                  )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="OK",
+     *         @OA\JsonContent()
+     *     ),
+     *     @OA\Response(
+     *         response="404",
+     *         description="Room not found",
+     *         @OA\JsonContent()
+     *     ),
+     *     security={{"JWT":{}}}
+     * )
+     * @param Request $request
+     */
+    public function updateStatus($id,$status, Request $request){
+        //Check permissions
+        if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
+            return $this->response->errorUnauthorized(trans('reservation.unauthorized'));
+        }
+
+        //Validate Reservation
+        $reservation = Reservation::findOrFail($id);
+        if(!$reservation){
+            return $this->response->errorNotFound('reservation.roomNotFound');
+        }
+
+        if (!in_array($request->get('status'), Reservation::AVAILABLE_STATUS)) {
+            return $this->errorBadRequest('');
+        }
+
+        $reservation->status = $status;
 
         $reservation->update();
         return $this->response->noContent()->setStatusCode(200);
@@ -334,7 +394,7 @@ class ReservationController extends BaseController
 
         //Validate Status
         if(in_array($reservation->status,['checkIn'])){
-            return $this->response->error('reservation.statusError');
+            return $this->response->error('reservation.statusError',400);
         }
 
         //Validate DateStart
@@ -342,7 +402,7 @@ class ReservationController extends BaseController
         $dateNow = new \DateTime('now',(new \DateTimeZone(env('APP_TIMEZONE'))));
 
         if($dateStart >= $dateNow){
-            return $this->response->error('reservation.dateError');
+            return $this->response->error('reservation.dateError',400);
         }
 
         if( !$reservation->delete() ) {

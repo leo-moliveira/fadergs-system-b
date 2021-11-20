@@ -4,6 +4,10 @@ namespace App\Models;
 
 class Reservation extends BaseModel
 {
+    public const AVAILABLE_STATUS = [
+        'free', 'reserved', 'checkIn',  'checkOut', 'pendingPayment', 'paid'
+    ];
+
     protected $table = 'reservations';
 
     protected $fillable = [
@@ -18,4 +22,6 @@ class Reservation extends BaseModel
         'status',
         'created_at',
         ];
+
+
 }
