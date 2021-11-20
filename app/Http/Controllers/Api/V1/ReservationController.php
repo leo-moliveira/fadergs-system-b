@@ -6,12 +6,21 @@ use App\Http\Classes\Helpers;
 use App\Models\Client;
 use App\Models\Reservation;
 use App\Models\Rooms;
+use App\Transformers\ReservationTransformer;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class ReservationController extends BaseController
 {
     protected $reservation;
+
+    /**
+     * @param Reservation $reservation
+     */
+    public function __construct(Reservation $reservation)
+    {
+        $this->reservation = $reservation;
+    }
 
     /**
      * @OsA\Get (
@@ -27,15 +36,90 @@ class ReservationController extends BaseController
      * @return \Dingo\Api\Http\Response
      */
     public function list(Request $request){
+        //Check permissions
+        if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
+            return $this->response->errorUnauthorized(trans('rooms.unauthorized'));
+        }
 
+        $reservation = $this->reservation->paginate(25);
+        return $this->response->paginator($reservation, new ReservationTransformer());
     }
 
+    /**
+     * @OA\Get (
+     *     path="/api/reservation/{id}",
+     *     tags={"Reservation"},
+     *     summary = "Get data from reservation id.",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID of reservation to show",
+     *         required=true,
+     *         @OA\Schema(type="number")
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Rooms information.",
+     *         @OA\JsonContent()
+     *     ),
+     *     security={{"JWT":{}}}
+     * )
+     * @param $number
+     * @return \Dingo\Api\Http\Response|void
+     */
     public function show(Request $request, $id){
+        //Check permissions
+        if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
+            return $this->response->errorUnauthorized(trans('rooms.unauthorized'));
+        }
 
+        //Validate reservation
+        $reservation = Reservation::findOrFail($id);
+
+        if(!$reservation){
+            return $this->response->errorNotFound('reservation.notFound');
+        }
+
+        return $this->response->item($reservation, new ReservationTransformer());
     }
 
-    public function reservationByClient(Request $request,$id){
+    /**
+     * @OA\Get (
+     *     path="/api/reservation/client/{client_id}",
+     *     tags={"Reservation"},
+     *     summary = "Get data from reservation from expecific user.",
+     *     @OA\Parameter(
+     *         name="client_id",
+     *         in="path",
+     *         description="ID of user to show",
+     *         required=true,
+     *         @OA\Schema(type="number")
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Rooms information.",
+     *         @OA\JsonContent()
+     *     ),
+     *     security={{"JWT":{}}}
+     * )
+     * @param $number
+     * @return \Dingo\Api\Http\Response|void
+     */
+    public function reservationByClient(Request $request, $clientId){
+        //Check permissions
+        if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
+            return $this->response->errorUnauthorized(trans('rooms.unauthorized'));
+        }
 
+        //Validate Client
+        $client = Client::findOrFail($clientId);
+
+        if(!$client){
+            return $this->response->errorNotFound('reservation.clientNotFound');
+        }
+
+        $reservation = $this->reservation->where('client_id', '=', $clientId)->paginate(25);
+        return $this->response->paginator($reservation, new ReservationTransformer());
     }
 
     /**
@@ -51,8 +135,8 @@ class ReservationController extends BaseController
      *              required={"client_id","room_number","date_start","date_end"},
      *              @OA\Property(property="client_id", type="number", example="8"),
      *              @OA\Property(property="room_number", type="number", example="101"),
-     *              @OA\Property(property="date_start", type="date", example="2021-10-20 00:00:00"),
-     *              @OA\Property(property="date_end", type="date", example="2021-10-31 17:00:00")
+     *              @OA\Property(property="date_start", type="date", example="21/11/2021 00:00:00"),
+     *              @OA\Property(property="date_end", type="date", example="22/11/2021 17:00:00")
      *          ),
      *     ),
      *     @OA\Response(
@@ -97,7 +181,7 @@ class ReservationController extends BaseController
         $dateEnd = \DateTime::createFromFormat('d/m/Y H:i:s',$request->get('date_end'));
         $dateNow = new \DateTime('now',(new \DateTimeZone(env('APP_TIMEZONE'))));
 
-        if($dateStart >= $dateEnd || $dateStart > $dateNow || $dateEnd < $dateNow){
+        if($dateStart >= $dateEnd || $dateStart < $dateNow){
             return $this->response->error('reservation.dateError');
         }
 
@@ -108,7 +192,7 @@ class ReservationController extends BaseController
 
         //Insert reservation
         $atributes = [
-            'room_number'   => $request->get('room_number'),
+            'room_id'       => $request->get('room_number'),
             'client_id'     => $request->get('client_id'),
             'date_start'    => $request->get('date_start'),
             'date_end'      => $request->get('date_end'),
@@ -255,7 +339,6 @@ class ReservationController extends BaseController
 
         //Validate DateStart
         $dateStart = \DateTime::createFromFormat('d/m/Y H:i:s', $reservation->dateStart);
-        //$dateEnd = \DateTime::createFromFormat('d/m/Y H:i:s', $reservation->dateEnd);
         $dateNow = new \DateTime('now',(new \DateTimeZone(env('APP_TIMEZONE'))));
 
         if($dateStart >= $dateNow){
