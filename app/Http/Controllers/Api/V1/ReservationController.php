@@ -23,7 +23,7 @@ class ReservationController extends BaseController
     }
 
     /**
-     * @OsA\Get (
+     * @OA\Get (
      *     path="/api/reservation",
      *     tags={"Reservation"},
      *     summary = "Get list of all Reservations",
@@ -308,6 +308,15 @@ class ReservationController extends BaseController
      *     path="/api/reservation/{id}/{status}",
      *     tags={"Reservation"},
      *     summary = "Update reservation status",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="id of reservation",
+     *         required=true,
+     *         @OA\Schema(
+     *                      type="number"
+     *                  )
+     *     ),
      *     @OA\Parameter(
      *         name="status",
      *         in="path",
