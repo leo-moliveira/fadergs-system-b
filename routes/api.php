@@ -65,5 +65,6 @@ $api->version('v1', ['namespace' => 'App\Http\Controllers\Api\V1'], function ($a
         $api->get('payment/reservation/{id}', 'PaymentController@accountByReservId');
         $api->get('payment/{status}', 'PaymentController@listByStatus');
         $api->get('payment/pay/{id}', 'PaymentController@generatePayUrl');
+        $api->put('payment/pay', 'PaymentController@update');
     });
 });

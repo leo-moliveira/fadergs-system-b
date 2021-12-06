@@ -292,14 +292,14 @@ class ReservationController extends BaseController
             return $this->errorBadRequest($validator->messages());
         }
 
-        $this->reservation->client_id     = ($request->get('client_id')) ? $request->get('client_id') : $reservation->client_id;
-        $this->reservation->room_id       = ($request->get('room_number')) ? $request->get('room_number') : $reservation->room_id;
-        $this->reservation->date_start    = ($request->get('date_start')) ? $request->get('date_start') : $reservation->date_start;
-        $this->reservation->date_end      = ($request->get('date_end')) ? $request->get('date_end') : $reservation->date_end;
-        $this->reservation->check_in      = ($request->get('check_in')) ? $request->get('check_in') : $reservation->check_in;
-        $this->reservation->check_out     = ($request->get('check_out')) ? $request->get('check_out') : $reservation->check_out;
-        $this->reservation->price         = ($request->get('price')) ? $request->get('price') : $reservation->price;
-        $this->reservation->status        = ($request->get('status')) ? $request->get('status') : $reservation->status;
+        $this->reservation->client_id     = ($request->get('client_id')) ? $request->get('client_id') : $this->reservation->client_id;
+        $this->reservation->room_id       = ($request->get('room_number')) ? $request->get('room_number') : $this->reservation->room_id;
+        $this->reservation->date_start    = ($request->get('date_start')) ? $request->get('date_start') : $this->reservation->date_start;
+        $this->reservation->date_end      = ($request->get('date_end')) ? $request->get('date_end') : $this->reservation->date_end;
+        $this->reservation->check_in      = ($request->get('check_in')) ? $request->get('check_in') : $this->reservation->check_in;
+        $this->reservation->check_out     = ($request->get('check_out')) ? $request->get('check_out') : $this->reservation->check_out;
+        $this->reservation->price         = ($request->get('price')) ? $request->get('price') : $this->reservation->price;
+        $this->reservation->status        = ($request->get('status')) ? $request->get('status') : $this->reservation->status;
         $this->reservation->update();
 
         $messege = "Reservation updated";

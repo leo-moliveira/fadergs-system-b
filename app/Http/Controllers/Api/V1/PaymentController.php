@@ -6,8 +6,9 @@ use App\Http\Classes\Helpers;
 use App\Http\Classes\MyPayment;
 use App\Models\Client;
 use App\Models\Reservation;
+use App\Models\Rooms;
 use App\Transformers\PaymentTransformer;
-use Dingo\Api\Http\Request;
+use Illuminate\Http\Request;
 use App\Models\Payment;
 
 class PaymentController extends BaseController
@@ -182,5 +183,95 @@ class PaymentController extends BaseController
         $payment->update();
 
         return $this->response->array(['URL' => $result]);
+    }
+
+    /**
+     * @OA\Put (
+     *     path="/api/pay",
+     *     tags={"Payment"},
+     *     summary = "Update payment information",
+     *     @OA\RequestBody(
+     *          required=true,
+     *          description="Data to payment",
+     *          @OA\MediaType(
+     *           mediaType="application/x-www-form-urlencoded",
+     *           @OA\Schema(
+     *               type="object",
+     *               @OA\Property(property="id", type="integer", example="8"),
+     *               @OA\Property(property="client_id", type="integer", example="1"),
+     *               @OA\Property(property="reservation_id", type="integer", example="1"),
+     *               @OA\Property(property="room_number", type="integer", example="101"),
+     *               @OA\Property(property="date_start", type="date-time", example="31/10/2021 17:12:52"),
+     *               @OA\Property(property="date_end", type="date-time", example="31/10/2021 17:12:52"),
+     *               @OA\Property(property="pay_date", type="date-time", example="10/10/2021 04:12:52"),
+     *               @OA\Property(property="pay_code", type="string", example="9272B7ECB4B4284BB4479F90D676DB21"),
+     *               @OA\Property(property="price", type="double", example="200.2"),
+     *               @OA\Property(property="status", type="string", example="checkOut",description = "pending, paid"),
+     *               @OA\Property(property="description", type="string", example="2 beds and 1 bathroom")
+     *           ))
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="OK",
+     *         @OA\JsonContent()
+     *     ),
+     *     @OA\Response(
+     *         response="404",
+     *         description="Room not found",
+     *         @OA\JsonContent()
+     *     ),
+     *     security={{"JWT":{}}}
+     * )
+     * @param Request $request
+     */
+    private function update(Request $request)
+    {
+        //Check permissions
+        if (!Helpers::validateUserRole($request->user(), ['admin', 'manager'])){
+            return $this->response->errorUnauthorized(trans('rooms.unauthorized'));
+        }
+
+        //Validate request
+        $validator = \Validator::make($request->input(), [
+            'id'                => 'required|integer',
+            'client_id'         => 'required|integer',
+            'reservation_id'    => 'required|integer',
+            'room_number'       => 'required|integer',
+            'date_start'        => 'required|date_format:d/m/Y H:i:s',
+            'date_end'          => 'required|date_format:d/m/Y H:i:s',
+            'pay_code'          => 'required|string',
+            'pay_date'          => 'required|date_format:d/m/Y H:i:s',
+            'price'             => 'nullable|between:0,99.99',
+            'status'            => 'nullable|string',
+            'description'       => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->errorBadRequest($validator->messages());
+        }
+
+        $this->payment = Payment::findOrFail($request->get('id'));
+        $reservation = Reservation::findOrFail($request->get('reservation_id'));
+        $client = Client::findOrFail($request->get('client_id'));
+        $room = Rooms::findOrFail($request->get('room_number'));
+
+        if(!$this->payment || !$reservation || !$client || !$room){
+            return $this->response->errorNotFound();
+        }
+
+        $this->payment->reservation_id = ($request->get('reservation_id')) ? $request->get('reservation_id') : $this->payment->reservation_id;
+        $this->payment->client_id = ($request->get('client_id')) ? $request->get('client_id') : $this->payment->client_id;
+        $this->payment->room_number = ($request->get('room_number')) ? $request->get('room_number') : $this->payment->room_number;
+        $this->payment->date_start = ($request->get('date_start')) ? $request->get('date_start') : $this->payment->date_start;
+        $this->payment->date_end = ($request->get('date_end')) ? $request->get('date_end') : $this->payment->date_end;
+        $this->payment->pay_date = ($request->get('pay_date')) ? $request->get('pay_date') : $this->payment->pay_date;
+        $this->payment->pay_code = ($request->get('pay_code')) ? $request->get('pay_code') : $this->payment->pay_code;
+        $this->payment->price = ($request->get('price')) ? $request->get('price') : $this->payment->price;
+        $this->payment->status = ($request->get('status')) ? $request->get('status') : $this->payment->status;
+        $this->payment->description = ($request->get('description')) ? $request->get('description') : $this->payment->description;
+        $this->payment->update();
+
+        $messege = "Payment updated";
+        return $this->response->noContent()->setStatusCode(200,$messege);
     }
 }
