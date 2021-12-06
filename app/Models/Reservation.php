@@ -5,7 +5,7 @@ namespace App\Models;
 class Reservation extends BaseModel
 {
     public const AVAILABLE_STATUS = [
-        'free', 'reserved', 'checkIn',  'checkOut', 'pendingPayment', 'paid'
+        'free', 'reserved', 'checkIn',  'checkOut',
     ];
 
     protected $table = 'reservations';

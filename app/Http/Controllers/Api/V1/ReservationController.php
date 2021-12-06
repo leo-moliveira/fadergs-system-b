@@ -7,6 +7,7 @@ use App\Models\Client;
 use App\Models\Reservation;
 use App\Models\Rooms;
 use App\Transformers\ReservationTransformer;
+use App\Models\Payment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -193,7 +194,8 @@ class ReservationController extends BaseController
         $dateDiffDays = $dateStart->diff($dateEnd)->days;
 
         //Calculate reservation price
-        $reservationPrice = $room->price * $dateDiffDays;
+        //$reservationPrice = $room->price * $dateDiffDays;
+        $reservationPrice = $room->price;
 
         //Insert reservation
         $atributes = [
@@ -238,7 +240,7 @@ class ReservationController extends BaseController
      *               @OA\Property(property="check_out", type="date-time", example="31/10/2021 17:00:00"),
      *               @OA\Property(property="price", type="double", example="200.2"),
      *               @OA\Property(property="status", type="string", example="checkOut",description = "free, reserved,
-                                                                            checkIn,  checkOut, pendingPayment, paid"))
+                                                                            checkIn,  checkOut"))
      *           )
      *     ),
      *     @OA\Parameter(
@@ -269,8 +271,8 @@ class ReservationController extends BaseController
         }
 
         //Validate Reservation
-        $reservation = Reservation::findOrFail($id);
-        if(!$reservation){
+        $this->reservation = Reservation::findOrFail($id);
+        if(!$this->reservation){
             return $this->response->errorNotFound('reservation.roomNotFound');
         }
 
@@ -290,17 +292,28 @@ class ReservationController extends BaseController
             return $this->errorBadRequest($validator->messages());
         }
 
-        $reservation->client_id     = ($request->get('client_id')) ? $request->get('client_id') : $reservation->client_id;
-        $reservation->room_id       = ($request->get('room_number')) ? $request->get('room_number') : $reservation->room_id;
-        $reservation->date_start    = ($request->get('date_start')) ? $request->get('date_start') : $reservation->date_start;
-        $reservation->date_end      = ($request->get('date_end')) ? $request->get('date_end') : $reservation->date_end;
-        $reservation->check_in      = ($request->get('check_in')) ? $request->get('check_in') : $reservation->check_in;
-        $reservation->check_out     = ($request->get('check_out')) ? $request->get('check_out') : $reservation->check_out;
-        $reservation->price         = ($request->get('price')) ? $request->get('price') : $reservation->price;
-        $reservation->status        = ($request->get('status')) ? $request->get('status') : $reservation->status;
+        $this->reservation->client_id     = ($request->get('client_id')) ? $request->get('client_id') : $reservation->client_id;
+        $this->reservation->room_id       = ($request->get('room_number')) ? $request->get('room_number') : $reservation->room_id;
+        $this->reservation->date_start    = ($request->get('date_start')) ? $request->get('date_start') : $reservation->date_start;
+        $this->reservation->date_end      = ($request->get('date_end')) ? $request->get('date_end') : $reservation->date_end;
+        $this->reservation->check_in      = ($request->get('check_in')) ? $request->get('check_in') : $reservation->check_in;
+        $this->reservation->check_out     = ($request->get('check_out')) ? $request->get('check_out') : $reservation->check_out;
+        $this->reservation->price         = ($request->get('price')) ? $request->get('price') : $reservation->price;
+        $this->reservation->status        = ($request->get('status')) ? $request->get('status') : $reservation->status;
+        $this->reservation->update();
 
-        $reservation->update();
-        return $this->response->noContent()->setStatusCode(200);
+        $messege = "Reservation updated";
+
+        if($request->get('status') === "checkOut"){
+            $this->reservation->check_out = Carbon::now()->toDateTimeString();
+            $this->createPayment();
+        }
+
+        if ($request->get('status') === "checkIn"){
+            $this->reservation->check_in = Carbon::now()->toDateTimeString();
+        }
+
+        return $this->response->noContent()->setStatusCode(200,$messege);
     }
 
     /**
@@ -324,7 +337,7 @@ class ReservationController extends BaseController
      *         required=true,
      *         @OA\Schema(
      *                      type="string",
-     *                      enum={"free", "reserved", "checkIn",  "checkOut", "pendingPayment", "paid"},
+     *                      enum={"free", "reserved", "checkIn",  "checkOut"},
      *                  )
      *     ),
      *     @OA\Response(
@@ -348,19 +361,31 @@ class ReservationController extends BaseController
         }
 
         //Validate Reservation
-        $reservation = Reservation::findOrFail($id);
-        if(!$reservation){
+        $this->reservation = Reservation::findOrFail($id);
+        if(!$this->reservation){
             return $this->response->errorNotFound('reservation.roomNotFound');
         }
 
-        if (!in_array($request->get('status'), Reservation::AVAILABLE_STATUS)) {
+        if (!in_array($status, Reservation::AVAILABLE_STATUS)) {
             return $this->errorBadRequest('');
         }
 
-        $reservation->status = $status;
+        $this->reservation->status = $status;
 
-        $reservation->update();
-        return $this->response->noContent()->setStatusCode(200);
+        $messege = "Reservation updated";
+
+        if($status === "checkOut"){
+            $this->reservation->check_out = Carbon::now()->toDateTimeString();
+            $this->createPayment();
+        }
+
+        if ($status === "checkIn"){
+            $this->reservation->check_in = Carbon::now()->toDateTimeString();
+        }
+
+        $this->reservation->update();
+
+        return $this->response->noContent()->setStatusCode(200,$messege);
     }
 
     /**
@@ -419,5 +444,37 @@ class ReservationController extends BaseController
         }
 
         return $this->response->noContent()->setStatusCode(200);
+    }
+
+    private function createPayment()
+    {
+        $payment = new Payment();
+
+        $payment = $payment->where('reservation_id', '=', $this->reservation->id);
+
+        if($payment->count() > 0){
+            return false;
+        }
+
+        if($this->reservation->status === 'checkOut'){
+            $atributes = [
+                'client_id'         => $this->reservation->client_id,
+                'reservation_id'    => $this->reservation->id,
+                'room_number'       => $this->reservation->room_id,
+                'description'       => (Rooms::findOrFail($this->reservation->room_id))->description,
+                'price'             => $this->reservation->price,
+                'status'            => "pending",
+                'pay_code'          => null,
+                'pay_date'          => null,
+                'date_start'        => $this->reservation->date_start,
+                'date_end'          => $this->reservation->date_end,
+                'created_at'        => Carbon::now()->toDateTimeString()
+            ];
+
+            if(!$payment->create($atributes)){
+                return false;
+            }
+        }
+        return true;
     }
 }

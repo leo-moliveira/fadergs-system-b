@@ -61,6 +61,9 @@ $api->version('v1', ['namespace' => 'App\Http\Controllers\Api\V1'], function ($a
         $api->delete('reservation/delete/{id}', 'ReservationController@delete');
 
         //Payment
-        $api->get('payment/client/{reservationId}', 'PaymentController@accountByReservId'); //TODO
+        $api->get('payment/client/{id}', 'PaymentController@accountByclient');
+        $api->get('payment/reservation/{id}', 'PaymentController@accountByReservId');
+        $api->get('payment/{status}', 'PaymentController@listByStatus');
+        $api->get('payment/pay/{id}', 'PaymentController@generatePayUrl');
     });
 });
