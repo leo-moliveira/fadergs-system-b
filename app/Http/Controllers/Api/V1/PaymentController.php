@@ -131,13 +131,13 @@ class PaymentController extends BaseController
 
     /**
      * @OA\Get (
-     *     path="/api/pay/{id}",
+     *     path="/api/payment/pay/{id}",
      *     tags={"Payment"},
      *     summary = "Get payment url (pagseguro) by id of payment ",
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="ID of reservation to show",
+     *         description="ID of payment to generate url",
      *         required=true,
      *         @OA\Schema(type="number")
      *     ),
